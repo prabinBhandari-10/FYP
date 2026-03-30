@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AuthController extends Controller
 {
@@ -70,7 +73,40 @@ class AuthController extends Controller
 
     public function userDashboard()
     {
-        return view('dashboard');
+        $userId = Auth::id();
+
+        $stats = [
+            'totalReports' => 0,
+            'lostReports' => 0,
+            'foundReports' => 0,
+            'activeClaims' => 0,
+        ];
+
+        if (Schema::hasTable('reports')) {
+            $stats['totalReports'] = Report::where('user_id', $userId)->count();
+            $stats['lostReports'] = Report::where('user_id', $userId)->where('type', 'lost')->count();
+            $stats['foundReports'] = Report::where('user_id', $userId)->where('type', 'found')->count();
+        }
+
+        if (Schema::hasTable('claims')) {
+            $claimsQuery = DB::table('claims');
+
+            if (Schema::hasColumn('claims', 'user_id')) {
+                $claimsQuery->where('user_id', $userId);
+            }
+
+            if (Schema::hasColumn('claims', 'is_active')) {
+                $claimsQuery->where('is_active', true);
+            } elseif (Schema::hasColumn('claims', 'status')) {
+                $claimsQuery->whereIn('status', ['active', 'pending', 'in_progress']);
+            } elseif (Schema::hasColumn('claims', 'state')) {
+                $claimsQuery->whereIn('state', ['active', 'pending', 'in_progress']);
+            }
+
+            $stats['activeClaims'] = $claimsQuery->count();
+        }
+
+        return view('dashboard', compact('stats'));
     }
 
     public function adminDashboard()

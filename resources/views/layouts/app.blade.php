@@ -137,6 +137,23 @@
             font-size: 15px;
         }
 
+        input[type="date"],
+        input[type="file"],
+        .form-textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: var(--bg-soft);
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
         input:focus {
             outline: none;
             border-color: #5b7fb5;
@@ -209,6 +226,31 @@
             margin-top: 18px;
         }
 
+        .dashboard-shell {
+            background:
+                linear-gradient(155deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+                linear-gradient(330deg, rgba(74, 222, 128, 0.08), transparent 35%);
+        }
+
+        .dashboard-heading {
+            margin-bottom: 10px;
+        }
+
+        .dashboard-grid--wide {
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            margin-top: 12px;
+            margin-bottom: 18px;
+        }
+
+        .dashboard-section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+
         .stat {
             border: 1px solid var(--line);
             border-radius: 12px;
@@ -220,6 +262,57 @@
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 4px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .action-card {
+            display: block;
+            text-decoration: none;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+            color: var(--text);
+            background: rgba(17, 24, 39, 0.65);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            border-color: #4b607d;
+            background: rgba(23, 33, 50, 0.85);
+        }
+
+        .action-card h3 {
+            margin: 0 0 6px;
+            font-size: 16px;
+        }
+
+        .action-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .action-card--lost {
+            border-left: 4px solid #fb7185;
+        }
+
+        .action-card--found {
+            border-left: 4px solid #4ade80;
+        }
+
+        .action-card--browse {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .action-card--claims {
+            border-left: 4px solid #facc15;
         }
 
         .stat .label {
