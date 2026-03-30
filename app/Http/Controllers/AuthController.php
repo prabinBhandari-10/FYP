@@ -25,6 +25,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'role' => 'user',
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -54,7 +55,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended($this->redirectPathForRole($request->user()));
     }
 
     public function logout(Request $request)
@@ -67,8 +68,20 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'You have been logged out.');
     }
 
-    public function dashboard()
+    public function userDashboard()
     {
         return view('dashboard');
+    }
+
+    public function adminDashboard()
+    {
+        return view('admin.dashboard');
+    }
+
+    protected function redirectPathForRole(User $user): string
+    {
+        return $user->role === 'admin'
+            ? route('admin.dashboard')
+            : route('dashboard');
     }
 }

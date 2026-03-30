@@ -249,7 +249,7 @@
 
         <div class="nav-links">
             @auth
-                <a href="{{ route('dashboard') }}" class="btn">Dashboard</a>
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}" class="btn">Dashboard</a>
 
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf

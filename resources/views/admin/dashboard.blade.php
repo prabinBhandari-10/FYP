@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'User Dashboard | Lost and Found')
+@section('title', 'Admin Dashboard | Lost and Found')
 
 @section('content')
     <section class="card" style="width: min(100%, 860px);">
-        <h2>User Dashboard</h2>
-        <p class="subtitle">Hi {{ auth()->user()->name }}, welcome to your Lost and Found workspace.</p>
+        <h2>Admin Dashboard</h2>
+        <p class="subtitle">Welcome back {{ auth()->user()->name }}. You are signed in as administrator.</p>
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -14,22 +14,22 @@
         <div class="dashboard-grid">
             <div class="stat">
                 <div class="value">0</div>
-                <div class="label">Lost reports</div>
+                <div class="label">Total users</div>
             </div>
 
             <div class="stat">
                 <div class="value">0</div>
-                <div class="label">Found reports</div>
+                <div class="label">Pending reports</div>
             </div>
 
             <div class="stat">
                 <div class="value">0</div>
-                <div class="label">Claims submitted</div>
+                <div class="label">Resolved claims</div>
             </div>
         </div>
 
         <p class="helper-text" style="margin-top: 18px;">
-            This is a starter dashboard for Phase 1. In the next phase, we can add report and claim modules.
+            This is the admin area. Next, we can add management tools for users, reports, and moderation.
         </p>
     </section>
 @endsection
