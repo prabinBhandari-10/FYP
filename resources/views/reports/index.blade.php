@@ -111,6 +111,20 @@
             overflow: hidden;
             display: grid;
             grid-template-rows: 160px auto;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .lf-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(122, 16, 38, 0.4);
+            box-shadow: 0 18px 36px rgba(9, 12, 24, 0.45);
+        }
+
+        .lf-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: grid;
+            grid-template-rows: 160px auto;
         }
 
         .lf-card img {
@@ -213,18 +227,20 @@
                 <div class="lf-cards">
                     @foreach ($reports as $report)
                         <div class="lf-card">
-                            @if ($report->image)
-                                <img src="{{ asset('storage/' . $report->image) }}" alt="{{ $report->title }}">
-                            @else
-                                <img src="https://via.placeholder.com/640x360?text=No+Image" alt="No image">
-                            @endif
+                            <a class="lf-card-link" href="{{ route('items.show', $report) }}">
+                                @if ($report->image)
+                                    <img src="{{ asset('storage/' . $report->image) }}" alt="{{ $report->title }}">
+                                @else
+                                    <img src="https://via.placeholder.com/640x360?text=No+Image" alt="No image">
+                                @endif
 
-                            <div class="lf-card-body">
-                                <span class="lf-badge">{{ ucfirst($report->type) }}</span>
-                                <h3 class="lf-title">{{ $report->title }}</h3>
-                                <div class="lf-meta">{{ $report->category }} · {{ $report->location }}</div>
-                                <div class="lf-meta">{{ $report->date?->format('M d, Y') }}</div>
-                            </div>
+                                <div class="lf-card-body">
+                                    <span class="lf-badge">{{ ucfirst($report->type) }}</span>
+                                    <h3 class="lf-title">{{ $report->title }}</h3>
+                                    <div class="lf-meta">{{ $report->category }} · {{ $report->location }}</div>
+                                    <div class="lf-meta">{{ $report->date?->format('M d, Y') }}</div>
+                                </div>
+                            </a>
                         </div>
                     @endforeach
                 </div>

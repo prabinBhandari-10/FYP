@@ -31,5 +31,9 @@
         <p class="helper-text" style="margin-top: 18px;">
             This is the admin area. Next, we can add management tools for users, reports, and moderation.
         </p>
+
+        <div style="margin-top: 16px;">
+            <a class="btn btn-primary" href="{{ route('admin.claims.index') }}">Manage Claims</a>
+        </div>
     </section>
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\ItemReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,16 +28,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/reports/found', [ItemReportController::class, 'storeFound'])->name('reports.found.store');
 
         Route::get('/items', [ItemReportController::class, 'index'])->name('items.index');
+        Route::get('/items/{report}', [ItemReportController::class, 'show'])->name('items.show');
+        Route::post('/items/{report}/claims', [ClaimController::class, 'store'])->name('claims.store');
 
-        Route::get('/claims', fn () => view('user.placeholder', [
-            'title' => 'My Claims',
-            'message' => 'Track your active and resolved claims in one place.',
-        ]))->name('claims.index');
+        Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');
     });
 
     Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])
         ->middleware('role:admin')
         ->name('admin.dashboard');
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/claims', [ClaimController::class, 'adminIndex'])->name('admin.claims.index');
+        Route::patch('/admin/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('admin.claims.approve');
+        Route::patch('/admin/claims/{claim}/reject', [ClaimController::class, 'reject'])->name('admin.claims.reject');
+    });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

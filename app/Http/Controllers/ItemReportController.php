@@ -39,6 +39,19 @@ class ItemReportController extends Controller
             'categories' => $categories,
         ]);
     }
+
+    public function show(Request $request, Report $report)
+    {
+        $report->load('user');
+        $existingClaim = $report->claims()
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        return view('reports.show', [
+            'report' => $report,
+            'existingClaim' => $existingClaim,
+        ]);
+    }
     public function createLost()
     {
         return view('reports.create', [
