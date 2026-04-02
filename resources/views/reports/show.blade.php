@@ -235,42 +235,52 @@
                     <div class="lf-section" style="margin-top: 18px;">
                         <h3 class="lf-title">Claim Request</h3>
 
-                        @if ($errors->has('claim'))
-                            <div class="lf-alert">{{ $errors->first('claim') }}</div>
-                        @endif
+                        @auth
+                            @if ($errors->has('claim'))
+                                <div class="lf-alert">{{ $errors->first('claim') }}</div>
+                            @endif
 
-                        @if ($existingClaim)
-                            <div class="lf-alert">
-                                Claim already submitted. Status: {{ ucfirst($existingClaim->status) }}
-                            </div>
+                            @if ($existingClaim)
+                                <div class="lf-alert">
+                                    Claim already submitted. Status: {{ ucfirst($existingClaim->status) }}
+                                </div>
+                            @else
+                                <form method="POST" action="{{ route('claims.store', $report) }}">
+                                    @csrf
+                                    <div class="lf-section" style="margin-top: 10px;">
+                                        <label class="lf-meta" for="message">Message</label>
+                                        <textarea class="lf-textarea" id="message" name="message" placeholder="Explain why this item is yours...">{{ old('message') }}</textarea>
+                                        @error('message')
+                                            <div class="lf-meta" style="color: var(--barca-gold);">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="lf-section" style="margin-top: 10px;">
+                                        <label class="lf-meta" for="proof_text">Proof (optional)</label>
+                                        <textarea class="lf-textarea" id="proof_text" name="proof_text" placeholder="Add any proof details (serial number, receipts, etc.)">{{ old('proof_text') }}</textarea>
+                                        @error('proof_text')
+                                            <div class="lf-meta" style="color: var(--barca-gold);">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="lf-actions">
+                                        <button type="submit" class="lf-btn lf-btn-primary">Submit Claim</button>
+                                        <a class="lf-btn" href="{{ route('items.index') }}">Back to Browse</a>
+                                    </div>
+                                </form>
+                            @endif
                         @else
-                            <form method="POST" action="{{ route('claims.store', $report) }}">
-                                @csrf
-                                <div class="lf-section" style="margin-top: 10px;">
-                                    <label class="lf-meta" for="message">Message</label>
-                                    <textarea class="lf-textarea" id="message" name="message" placeholder="Explain why this item is yours...">{{ old('message') }}</textarea>
-                                    @error('message')
-                                        <div class="lf-meta" style="color: var(--barca-gold);">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="lf-section" style="margin-top: 10px;">
-                                    <label class="lf-meta" for="proof_text">Proof (optional)</label>
-                                    <textarea class="lf-textarea" id="proof_text" name="proof_text" placeholder="Add any proof details (serial number, receipts, etc.)">{{ old('proof_text') }}</textarea>
-                                    @error('proof_text')
-                                        <div class="lf-meta" style="color: var(--barca-gold);">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="lf-actions">
-                                    <button type="submit" class="lf-btn lf-btn-primary">Submit Claim</button>
-                                    <a class="lf-btn" href="{{ route('items.index') }}">Back to Browse</a>
-                                </div>
-                            </form>
-                        @endif
+                            <div class="lf-alert">
+                                Please sign in to submit a claim for this item.
+                            </div>
+                            <div class="lf-actions">
+                                <a class="lf-btn lf-btn-primary" href="{{ route('login') }}">Login to Claim</a>
+                                <a class="lf-btn" href="{{ route('items.index') }}">Back to Browse</a>
+                            </div>
+                        @endauth
                     </div>
 
-                    @if ($existingClaim)
+                    @if (auth()->check() && $existingClaim)
                         <div class="lf-actions">
                             <a class="lf-btn" href="{{ route('items.index') }}">Back to Browse</a>
                             <a class="lf-btn" href="{{ route('claims.index') }}">View My Claims</a>

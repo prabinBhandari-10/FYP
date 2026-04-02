@@ -176,6 +176,15 @@
             margin-top: 8px;
         }
 
+        .lf-note {
+            background: rgba(31, 58, 138, 0.12);
+            border: 1px solid rgba(31, 58, 138, 0.28);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--text-soft);
+            font-size: 14px;
+        }
+
         @media (max-width: 980px) {
             .lf-filter-grid {
                 grid-template-columns: 1fr;
@@ -220,6 +229,12 @@
                     <button class="lf-btn" type="submit">Search</button>
                 </div>
             </form>
+
+            @guest
+                <div class="lf-note">
+                    Browsing is public. Log in to report items or submit a claim.
+                </div>
+            @endguest
 
             @if ($reports->count() === 0)
                 <div class="lf-empty">No items match your search yet.</div>

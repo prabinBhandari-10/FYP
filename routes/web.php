@@ -5,7 +5,12 @@ use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\ItemReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+Route::get('/items', [ItemReportController::class, 'index'])->name('items.index');
+Route::get('/items/{report}', [ItemReportController::class, 'show'])->name('items.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -27,8 +32,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/found/create', [ItemReportController::class, 'createFound'])->name('reports.found.create');
         Route::post('/reports/found', [ItemReportController::class, 'storeFound'])->name('reports.found.store');
 
-        Route::get('/items', [ItemReportController::class, 'index'])->name('items.index');
-        Route::get('/items/{report}', [ItemReportController::class, 'show'])->name('items.show');
         Route::post('/items/{report}/claims', [ClaimController::class, 'store'])->name('claims.store');
 
         Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');

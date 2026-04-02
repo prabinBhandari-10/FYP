@@ -43,9 +43,14 @@ class ItemReportController extends Controller
     public function show(Request $request, Report $report)
     {
         $report->load('user');
-        $existingClaim = $report->claims()
-            ->where('user_id', $request->user()->id)
-            ->first();
+        $existingClaim = null;
+        $user = $request->user();
+
+        if ($user) {
+            $existingClaim = $report->claims()
+                ->where('user_id', $user->id)
+                ->first();
+        }
 
         return view('reports.show', [
             'report' => $report,

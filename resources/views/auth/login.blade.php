@@ -3,527 +3,356 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Lost and Found Management System</title>
+    <title>Login | Lost & Found Auburn</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-main: #061323;
-            --bg-soft: #0d1f35;
-            --surface: rgba(255, 255, 255, 0.08);
-            --surface-line: rgba(255, 255, 255, 0.18);
-            --text-main: #ebf4ff;
-            --text-soft: #9fb5d4;
-            --blue: #2f8cff;
-            --teal: #11c9b4;
-            --danger-bg: rgba(255, 103, 132, 0.12);
-            --danger-line: rgba(255, 103, 132, 0.4);
-            --danger-text: #ffc2d0;
-            --success-bg: rgba(64, 214, 164, 0.12);
-            --success-line: rgba(64, 214, 164, 0.4);
-            --success-text: #b8ffe7;
+            --primary: #4338ca;
+            --primary-hover: #3730a3;
+            --secondary: #0ea5e9;
+            --text-dark: #0f172a;
+            --text-gray: #475569;
+            --text-light: #94a3b8;
+            --bg-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
         }
 
         * {
             box-sizing: border-box;
-        }
-
-        html,
-        body {
             margin: 0;
-            min-height: 100%;
-            font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-            color: var(--text-main);
-            background: radial-gradient(circle at 20% 20%, #123a66 0%, transparent 34%),
-                        radial-gradient(circle at 80% 0%, #0b5d63 0%, transparent 28%),
-                        radial-gradient(circle at 90% 80%, #194080 0%, transparent 34%),
-                        var(--bg-main);
+            padding: 0;
         }
 
-        .page-shell {
-            position: relative;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
             min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .page-shell::before,
-        .page-shell::after {
-            content: "";
-            position: absolute;
-            border-radius: 999px;
-            filter: blur(50px);
-            opacity: 0.45;
-            pointer-events: none;
-        }
-
-        .page-shell::before {
-            width: 380px;
-            height: 380px;
-            top: -120px;
-            right: -80px;
-            background: #2a75f3;
-        }
-
-        .page-shell::after {
-            width: 320px;
-            height: 320px;
-            bottom: -130px;
-            left: -60px;
-            background: #11c9b4;
-        }
-
-        .auth-layout {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-        }
-
-        .hero-side {
-            padding: 38px 54px;
-            background: linear-gradient(145deg, rgba(16, 53, 93, 0.74), rgba(6, 31, 58, 0.7));
-            border-right: 1px solid rgba(255, 255, 255, 0.12);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .back-nav {
+            position: absolute;
+            top: 24px;
+            left: 24px;
         }
 
-        .brand {
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14.5px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text-dark);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            animation: floatIn 700ms ease-out;
+            gap: 2px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+        
+        .logo-arch {
+            position: relative;
         }
 
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(150deg, rgba(47, 140, 255, 0.95), rgba(17, 201, 180, 0.9));
-            box-shadow: 0 0 20px rgba(17, 201, 180, 0.28);
-        }
-
-        .brand-mark svg {
-            width: 22px;
-            height: 22px;
-            fill: #f7fbff;
-        }
-
-        .brand-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: 0.3px;
-        }
-
-        .brand-subtitle {
-            margin: 2px 0 0;
-            font-size: 12px;
-            color: var(--text-soft);
-        }
-
-        .hero-content {
-            max-width: 620px;
-            animation: riseIn 820ms ease-out;
-        }
-
-        .hero-content h1 {
-            margin: 0 0 16px;
-            font-size: clamp(2rem, 4vw, 3rem);
-            line-height: 1.15;
-            letter-spacing: 0.3px;
-            text-wrap: balance;
-        }
-
-        .hero-content p {
-            margin: 0;
-            color: var(--text-soft);
-            line-height: 1.75;
-            max-width: 560px;
-            font-size: 1rem;
-        }
-
-        .feature-list {
-            margin: 28px 0 0;
-            padding: 0;
-            list-style: none;
-            display: grid;
-            gap: 14px;
-        }
-
-        .feature-item {
+        .logo-subtitle {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
             display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(2px);
+            align-items: flex-end;
+            gap: 4px;
+            padding-left: 28px;
         }
 
-        .feature-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 11px;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(150deg, rgba(47, 140, 255, 0.22), rgba(17, 201, 180, 0.2));
-            border: 1px solid rgba(47, 140, 255, 0.4);
-            flex-shrink: 0;
+        .card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px 36px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            width: 100%;
         }
 
-        .feature-icon svg {
-            width: 18px;
-            height: 18px;
-            fill: #ccedff;
-        }
-
-        .feature-item span {
-            font-size: 0.95rem;
-            color: #dcecff;
-        }
-
-        .hero-footer {
-            margin-top: 30px;
-            color: var(--text-soft);
-            font-size: 0.9rem;
-            animation: fadeIn 1s ease-out;
-        }
-
-        .login-side {
-            padding: 32px 24px;
-            display: grid;
-            place-items: center;
-        }
-
-        .login-card {
-            width: min(100%, 430px);
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
-            border: 1px solid var(--surface-line);
-            border-radius: 24px;
-            padding: 28px 24px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 20px 50px rgba(3, 10, 21, 0.45);
-            animation: cardIn 700ms ease-out;
+        .card-header {
+            text-align: center;
+            margin-bottom: 32px;
         }
 
         .card-title {
-            margin: 0;
-            font-size: 1.7rem;
-            letter-spacing: 0.2px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
         }
 
         .card-subtitle {
-            margin: 6px 0 20px;
-            color: var(--text-soft);
-            font-size: 0.95rem;
-        }
-
-        .alert {
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            border: 1px solid transparent;
-        }
-
-        .alert-success {
-            background: var(--success-bg);
-            border-color: var(--success-line);
-            color: var(--success-text);
-        }
-
-        .alert-error {
-            background: var(--danger-bg);
-            border-color: var(--danger-line);
-            color: var(--danger-text);
-        }
-
-        .alert ul {
-            margin: 0;
-            padding-left: 18px;
+            font-size: 14.5px;
+            color: var(--text-gray);
         }
 
         .form-group {
-            margin-bottom: 14px;
+            margin-bottom: 20px;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
             margin-bottom: 8px;
-            font-size: 0.88rem;
-            color: #d5e3f8;
-            letter-spacing: 0.1px;
         }
 
         .form-input {
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 14px;
-            padding: 11px 13px;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            background: rgba(11, 31, 55, 0.65);
-            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+            padding: 12px 14px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--text-dark);
+            transition: all 0.2s;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: rgba(17, 201, 180, 0.9);
-            box-shadow: 0 0 0 3px rgba(17, 201, 180, 0.18);
-            transform: translateY(-1px);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
         }
 
-        .remember-row {
+        .form-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .checkbox-container {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin: 12px 0 18px;
             gap: 8px;
-        }
-
-        .remember-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-soft);
-            font-size: 0.9rem;
             cursor: pointer;
+            color: var(--text-gray);
+            font-weight: 500;
         }
 
-        .remember-label input {
-            accent-color: var(--teal);
+        .checkbox-container input {
+            cursor: pointer;
             width: 16px;
             height: 16px;
+            accent-color: var(--primary);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
 
-        .login-button {
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             width: 100%;
-            border: 0;
-            border-radius: 14px;
-            padding: 12px 14px;
-            color: #f7fdff;
-            background: linear-gradient(120deg, #2f8cff, #11c9b4);
-            font-size: 0.98rem;
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
-            letter-spacing: 0.3px;
+            font-size: 15px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(18, 116, 214, 0.38);
-            transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+            transition: background-color 0.2s;
         }
 
-        .login-button:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.05);
-            box-shadow: 0 14px 35px rgba(19, 132, 226, 0.45);
+        .btn:hover {
+            background-color: var(--primary-hover);
         }
 
-        .login-button:active {
-            transform: translateY(0);
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
         }
 
-        .register-link {
-            margin: 18px 0 0;
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-error ul {
+            margin-left: 20px;
+            margin-top: 4px;
+        }
+
+        .card-footer {
+            margin-top: 32px;
             text-align: center;
-            color: var(--text-soft);
-            font-size: 0.92rem;
+            font-size: 14px;
+            color: var(--text-gray);
         }
 
-        .register-link a {
-            color: #7edcff;
+        .card-footer a {
+            color: var(--primary);
             text-decoration: none;
             font-weight: 600;
         }
 
-        .register-link a:hover {
+        .card-footer a:hover {
             text-decoration: underline;
         }
 
-        @media (max-width: 1000px) {
-            .auth-layout {
-                grid-template-columns: 1fr;
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 24px;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                background: transparent;
             }
-
-            .hero-side {
-                padding: 26px 20px 18px;
-                border-right: 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            body {
+                background-color: white;
             }
-
-            .hero-content h1 {
-                font-size: clamp(1.65rem, 6.2vw, 2.4rem);
-            }
-
-            .feature-list {
-                margin-top: 20px;
-                gap: 10px;
-            }
-
-            .hero-footer {
-                margin-top: 20px;
-            }
-
-            .login-side {
-                padding: 20px 14px 28px;
-            }
-
-            .login-card {
-                padding: 22px 18px;
-                border-radius: 20px;
-            }
-        }
-
-        @keyframes riseIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes cardIn {
-            from {
-                opacity: 0;
-                transform: translateY(22px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes floatIn {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
+            .back-nav {
+                position: relative;
+                top: auto;
+                left: auto;
+                width: 100%;
+                max-width: 440px;
+                margin-bottom: 24px;
+                padding: 0 12px;
             }
         }
     </style>
 </head>
 <body>
-<div class="page-shell">
-    <main class="auth-layout">
-        <section class="hero-side">
-            <div>
-                <header class="brand">
-                    <div class="brand-mark" aria-hidden="true">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M10.1 3.2a2.7 2.7 0 0 1 3.8 0l1.5 1.5a1 1 0 0 1-1.4 1.4l-1.5-1.5a.7.7 0 0 0-1 0L7.1 9a.7.7 0 0 0 0 1l6 6a.7.7 0 0 0 1 0l4.4-4.4a.7.7 0 0 0 0-1L17 9.1a1 1 0 0 1 1.4-1.4l1.5 1.5a2.7 2.7 0 0 1 0 3.8l-4.4 4.4a2.7 2.7 0 0 1-3.8 0l-6-6a2.7 2.7 0 0 1 0-3.8l4.4-4.4Z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="brand-title">Lost and Found Management System</p>
-                        <p class="brand-subtitle">Community Recovery Platform</p>
-                    </div>
-                </header>
 
-                <div class="hero-content">
-                    <h1>Find what was lost. Return what was found.</h1>
-                    <p>
-                        A secure, community-focused platform that helps students and residents report lost belongings,
-                        share found items, and reconnect people with what matters to them.
-                    </p>
+    <div class="back-nav">
+        <a href="{{ route('home') }}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Home
+        </a>
+    </div>
 
-                    <ul class="feature-list">
-                        <li class="feature-item">
-                            <div class="feature-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M12 2a7 7 0 0 0-7 7c0 4.6 7 12.5 7 12.5S19 13.6 19 9a7 7 0 0 0-7-7Zm0 9.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z"/>
-                                </svg>
-                            </div>
-                            <span>Report lost items quickly</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M3 12a1 1 0 0 1 1-1h4.6l1.2-2.4a1 1 0 0 1 1.8 0L13 11h7a1 1 0 1 1 0 2h-7.6l-1.2 2.4a1 1 0 0 1-1.8 0L8.2 13H4a1 1 0 0 1-1-1Z"/>
-                                </svg>
-                            </div>
-                            <span>Connect owners with finders</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M12 3a9 9 0 0 1 9 9 1 1 0 1 1-2 0 7 7 0 0 0-12.4-4.5H9a1 1 0 0 1 0 2H4.5a1 1 0 0 1-1-1V4a1 1 0 1 1 2 0v2A9 9 0 0 1 12 3Zm8.5 10.5a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1H15a1 1 0 1 1 0-2h3.1A7 7 0 0 1 6 16.5H3.5a1 1 0 1 1 0-2H8a1 1 0 0 1 1 1V20a1 1 0 1 1-2 0v-2A9 9 0 0 0 20 13.5Z"/>
-                                </svg>
-                            </div>
-                            <span>Community powered recovery</span>
-                        </li>
+    <div class="auth-container">
+        <a href="{{ route('home') }}" class="logo-container">
+            <div class="logo">
+                L
+                <svg class="logo-arch" width="14" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 22A8 8 0 0 1 20 22" />
+                </svg>
+                ST &amp; FOUND
+            </div>
+            <div class="logo-subtitle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Auburn
+            </div>
+        </a>
+
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Welcome back</h1>
+                <p class="card-subtitle">Login to continue to your dashboard.</p>
+            </div>
+
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            @if ($errors->any())
+                <div class="alert alert-error">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
                     </ul>
                 </div>
+            @endif
+
+            <form action="{{ route('login.attempt') }}" method="POST">      
+                @csrf
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email address</label>
+                    <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="admin@lostfound.test" required autofocus>  
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-input" type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container" for="remember">
+                        <input type="checkbox" id="remember" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">Sign In</button> 
+            </form>
+
+            <div class="card-footer">
+                New here? <a href="{{ route('register') }}">Create an account</a>
             </div>
+        </div>
+    </div>
 
-            <p class="hero-footer">Helping communities reconnect lost belongings.</p>
-        </section>
-
-        <section class="login-side">
-            <div class="login-card">
-                <h2 class="card-title">Welcome back</h2>
-                <p class="card-subtitle">Login to continue to your dashboard.</p>
-
-                @if (session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-error">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form action="{{ route('login.attempt') }}" method="POST">
-                    @csrf
-
-                    <div class="form-group">
-                        <label for="email">Email address</label>
-                        <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input class="form-input" type="password" id="password" name="password" required>
-                    </div>
-
-                    <div class="remember-row">
-                        <label class="remember-label" for="remember">
-                            <input type="checkbox" id="remember" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-                            Remember me
-                        </label>
-                    </div>
-
-                    <button type="submit" class="login-button">Login</button>
-                </form>
-
-                <p class="register-link">
-                    New here?
-                    <a href="{{ route('register') }}">Create an account</a>
-                </p>
-            </div>
-        </section>
-    </main>
-</div>
 </body>
 </html>
