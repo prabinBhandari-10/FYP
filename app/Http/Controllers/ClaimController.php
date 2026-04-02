@@ -48,14 +48,24 @@ class ClaimController extends Controller
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:1000'],
-            'proof_text' => ['nullable', 'string', 'max:2000'],
+            'citizenship_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'proof_text' => ['required_without:proof_photo', 'nullable', 'string', 'max:2000'],
+            'proof_photo' => ['required_without:proof_text', 'nullable', 'file', 'mimes:jpg,jpeg,png', 'max:4096'],
         ]);
+
+        $citizenshipPath = $request->file('citizenship_document')->store('claims/citizenship', 'public');
+        $proofPhotoPath = null;
+        if ($request->hasFile('proof_photo')) {
+            $proofPhotoPath = $request->file('proof_photo')->store('claims/proof', 'public');
+        }
 
         Claim::create([
             'user_id' => $request->user()->id,
             'item_id' => $report->id,
             'message' => $validated['message'],
+            'citizenship_document_path' => $citizenshipPath,
             'proof_text' => $validated['proof_text'] ?? null,
+            'proof_photo_path' => $proofPhotoPath,
             'status' => 'pending',
         ]);
 

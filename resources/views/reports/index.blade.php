@@ -1,269 +1,119 @@
 @extends('layouts.app')
 
-@section('title', 'Browse Items | Lost and Found')
+@section('title', 'Browse Items | Lost & Found Auburn')
 
 @section('content')
-    <style>
-        :root {
-            --bg-dark: #080d1a;
-            --bg-card: rgba(10, 16, 30, 0.72);
-            --barca-blue: #1f3a8a;
-            --barca-maroon: #7a1026;
-            --barca-gold: #d1a74a;
-            --text-main: #e7eaf4;
-            --text-soft: #a5aec3;
-            --input-bg: rgba(7, 12, 24, 0.7);
-        }
+<div style="max-width: 1000px; margin: 0 auto;">
 
-        .lf-page {
-            min-height: calc(100vh - 120px);
-            padding: 36px 12px 64px;
-            background:
-                radial-gradient(1100px 520px at 85% -15%, rgba(31, 58, 138, 0.25), transparent 60%),
-                radial-gradient(900px 420px at -10% 25%, rgba(122, 16, 38, 0.22), transparent 60%),
-                var(--bg-dark);
-            color: var(--text-main);
-        }
+    <div style="margin-bottom: 32px;">
+        <h1 class="page-title" style="margin-bottom: 8px;">Browse Reported Items</h1>
+        <p style="color: var(--text-gray); font-size: 15.5px;">Search and filter lost or found reports, then explore each item.</p>
+    </div>
 
-        .lf-container {
-            width: min(1120px, 100%);
-            margin: 0 auto;
-            display: grid;
-            gap: 20px;
-        }
-
-        .lf-hero h2 {
-            margin: 0 0 8px;
-            font-size: clamp(26px, 2.4vw, 36px);
-            letter-spacing: 0.3px;
-            font-weight: 700;
-        }
-
-        .lf-hero p {
-            margin: 0 0 16px;
-            color: var(--text-soft);
-            font-size: 15px;
-        }
-
-        .lf-filters {
-            background: var(--bg-card);
-            border: 1px solid rgba(31, 58, 138, 0.25);
-            border-radius: 16px;
-            padding: 16px;
-            display: grid;
-            gap: 12px;
-        }
-
-        .lf-filter-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 0.9fr 0.9fr auto;
-            gap: 12px;
-        }
-
-        .lf-input,
-        .lf-select {
-            width: 100%;
-            padding: 12px 14px;
-            background: var(--input-bg);
-            border: 1px solid rgba(31, 58, 138, 0.28);
-            border-radius: 12px;
-            color: var(--text-main);
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .lf-input::placeholder {
-            color: rgba(165, 174, 195, 0.8);
-        }
-
-        .lf-input:focus,
-        .lf-select:focus {
-            border-color: rgba(31, 58, 138, 0.8);
-            box-shadow: 0 0 0 4px rgba(31, 58, 138, 0.25), 0 0 18px rgba(122, 16, 38, 0.25);
-        }
-
-        .lf-btn {
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            color: var(--text-main);
-            background: linear-gradient(135deg, var(--barca-blue), var(--barca-maroon));
-            font-weight: 600;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .lf-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 16px 36px rgba(31, 58, 138, 0.35);
-        }
-
-        .lf-cards {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 18px;
-        }
-
-        .lf-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(31, 58, 138, 0.25);
-            border-radius: 16px;
-            overflow: hidden;
-            display: grid;
-            grid-template-rows: 160px auto;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-
-        .lf-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(122, 16, 38, 0.4);
-            box-shadow: 0 18px 36px rgba(9, 12, 24, 0.45);
-        }
-
-        .lf-card-link {
-            text-decoration: none;
-            color: inherit;
-            display: grid;
-            grid-template-rows: 160px auto;
-        }
-
-        .lf-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .lf-card-body {
-            padding: 16px;
-            display: grid;
-            gap: 8px;
-        }
-
-        .lf-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(209, 167, 74, 0.12);
-            border: 1px solid rgba(209, 167, 74, 0.28);
-            color: var(--barca-gold);
-            width: fit-content;
-        }
-
-        .lf-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .lf-meta {
-            font-size: 13px;
-            color: var(--text-soft);
-        }
-
-        .lf-empty {
-            background: var(--bg-card);
-            border: 1px solid rgba(31, 58, 138, 0.25);
-            border-radius: 16px;
-            padding: 24px;
-            color: var(--text-soft);
-            text-align: center;
-        }
-
-        .lf-pagination {
-            margin-top: 8px;
-        }
-
-        .lf-note {
-            background: rgba(31, 58, 138, 0.12);
-            border: 1px solid rgba(31, 58, 138, 0.28);
-            border-radius: 14px;
-            padding: 12px 14px;
-            color: var(--text-soft);
-            font-size: 14px;
-        }
-
-        @media (max-width: 980px) {
-            .lf-filter-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .lf-cards {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 640px) {
-            .lf-cards {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-
-    <section class="lf-page">
-        <div class="lf-container">
-            <div class="lf-hero">
-                <h2>Browse Reported Items</h2>
-                <p>Search and filter lost or found reports, then explore each item in a clean card layout.</p>
+    <div class="card" style="padding: 24px; margin-bottom: 32px; border-radius: 16px;">
+        <form method="GET" action="{{ route('items.index') }}" style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <input 
+                    class="form-input" 
+                    type="text" 
+                    name="q" 
+                    placeholder="Search by title..." 
+                    value="{{ request('q') }}"
+                    style="border-radius: 999px; padding: 12px 20px;">
             </div>
 
-            <form class="lf-filters" method="GET" action="{{ route('items.index') }}">
-                <div class="lf-filter-grid">
-                    <input class="lf-input" type="text" name="q" placeholder="Search by title..." value="{{ request('q') }}">
-
-                    <select class="lf-select" name="category">
-                        <option value="">All categories</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category }}" @selected(request('category') === $category)>{{ $category }}</option>
-                        @endforeach
-                    </select>
-
-                    <select class="lf-select" name="type">
-                        <option value="">Lost & Found</option>
-                        <option value="lost" @selected(request('type') === 'lost')>Lost</option>
-                        <option value="found" @selected(request('type') === 'found')>Found</option>
-                    </select>
-
-                    <button class="lf-btn" type="submit">Search</button>
-                </div>
-            </form>
-
-            @guest
-                <div class="lf-note">
-                    Browsing is public. Log in to report items or submit a claim.
-                </div>
-            @endguest
-
-            @if ($reports->count() === 0)
-                <div class="lf-empty">No items match your search yet.</div>
-            @else
-                <div class="lf-cards">
-                    @foreach ($reports as $report)
-                        <div class="lf-card">
-                            <a class="lf-card-link" href="{{ route('items.show', $report) }}">
-                                @if ($report->image)
-                                    <img src="{{ asset('storage/' . $report->image) }}" alt="{{ $report->title }}">
-                                @else
-                                    <img src="https://via.placeholder.com/640x360?text=No+Image" alt="No image">
-                                @endif
-
-                                <div class="lf-card-body">
-                                    <span class="lf-badge">{{ ucfirst($report->type) }}</span>
-                                    <h3 class="lf-title">{{ $report->title }}</h3>
-                                    <div class="lf-meta">{{ $report->category }} · {{ $report->location }}</div>
-                                    <div class="lf-meta">{{ $report->date?->format('M d, Y') }}</div>
-                                </div>
-                            </a>
-                        </div>
+            <div style="flex: 0 1 200px;">
+                <select class="form-select" name="category" style="border-radius: 999px; padding: 12px 20px;">
+                    <option value="">All categories</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category }}" @selected(request('category') === $category)>{{ $category }}</option>
                     @endforeach
-                </div>
+                </select>
+            </div>
 
-                <div class="lf-pagination">
-                    {{ $reports->links() }}
-                </div>
-            @endif
+            <div style="flex: 0 1 160px;">
+                <select class="form-select" name="type" style="border-radius: 999px; padding: 12px 20px;">
+                    <option value="">Lost & Found</option>
+                    <option value="lost" @selected(request('type') === 'lost')>Lost</option>
+                    <option value="found" @selected(request('type') === 'found')>Found</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">Search</button>
+        </form>
+        
+        @guest
+            <div style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-top: 24px; text-align: center; color: var(--text-gray); font-size: 13.5px;">
+                Browsing is public. Log in to report items or submit a claim.
+            </div>
+        @endguest
+    </div>
+
+    @if ($reports->count() === 0)
+        <div style="text-align: center; padding: 64px 24px; color: var(--text-light);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <h3 style="font-size: 18px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px;">No items found</h3>
+            <p>We couldn't find anything matching your search criteria.</p>
         </div>
-    </section>
+    @else
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+            @foreach ($reports as $report)
+                <a href="{{ route('items.show', $report) }}" class="card" style="display: flex; flex-direction: column; padding: 0; overflow: hidden; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 0;">
+                    
+                    @if ($report->image)
+                        <img src="{{ asset('storage/' . $report->image) }}" alt="{{ $report->title }}" style="width: 100%; height: 200px; object-fit: cover;">
+                    @else
+                        <div style="width: 100%; height: 200px; background-color: var(--bg-color); display: grid; place-items: center; border-bottom: 1px solid var(--border-color); color: var(--text-light);">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </div>
+                    @endif
+
+                    <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            @if($report->type === 'lost')
+                                <span class="badge badge-lost">Lost</span>
+                            @else
+                                <span class="badge badge-found">Found</span>
+                            @endif
+                        </div>
+                        
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; line-height: 1.3;">{{ $report->title }}</h3>
+                        
+                        <div style="display: flex; align-items: center; gap: 6px; color: var(--text-gray); font-size: 14px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            {{ $report->location }}
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text-gray);">{{ $report->category }}</span>
+                            <span style="font-size: 13px; color: var(--text-light);">{{ $report->date?->format('M d, Y') }}</span>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+
+        <div style="margin-top: 40px;">
+            {{ $reports->links() }}
+        </div>
+    @endif
+</div>
+
+<style>
+    /* Add hover state to cards via a class */
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+    }
+</style>
 @endsection

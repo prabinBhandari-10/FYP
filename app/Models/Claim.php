@@ -14,7 +14,9 @@ class Claim extends Model
         'user_id',
         'item_id',
         'message',
+        'citizenship_document_path',
         'proof_text',
+        'proof_photo_path',
         'status',
     ];
 

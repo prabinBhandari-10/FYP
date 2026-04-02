@@ -11,14 +11,14 @@
     
     <style>
         :root {
-            --primary: #4338ca;
-            --primary-hover: #3730a3;
-            --secondary: #0ea5e9;
-            --text-dark: #0f172a;
-            --text-gray: #475569;
+            --primary: #4744d8;
+            --primary-hover: #3f3bc7;
+            --secondary: #20a3e8;
+            --text-dark: #0e1737;
+            --text-gray: #435676;
             --text-light: #94a3b8;
-            --bg-color: #f8fafc;
-            --border-color: #e2e8f0;
+            --bg-color: #f1f5f9;
+            --border-color: #dbe3ee;
             --green: #22c55e;
         }
 
@@ -42,10 +42,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 60px;
-            background-color: white;
+            padding: 26px 52px;
+            background-color: #ffffff;
             border-bottom: 1px solid var(--border-color);
-            position: relative;
         }
 
         .logo-container {
@@ -64,6 +63,7 @@
             gap: 2px;
             color: var(--text-dark);
             text-transform: uppercase;
+            line-height: 1;
         }
 
         .logo-arch {
@@ -78,20 +78,22 @@
             align-items: flex-end;
             gap: 4px;
             padding-left: 28px;
+            line-height: 1;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 14px 28px;
+            padding: 13px 30px;
             border-radius: 9999px;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 15px;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.2s ease;
+            line-height: 1;
         }
 
         .btn-primary {
@@ -120,22 +122,26 @@
             font-size: 14px;
         }
 
-        .hero {
+        .hero-wrap {
             flex: 1;
+            padding: 40px 20px 80px;
+        }
+
+        .hero {
+            width: min(1320px, 100%);
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 80px 24px;
-            max-width: 800px;
-            margin: 0 auto;
+            padding-top: 120px;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 16px;
+            padding: 8px 20px;
             background: white;
             border: 1px solid var(--border-color);
             border-radius: 9999px;
@@ -153,12 +159,12 @@
         }
 
         .hero-title {
-            font-size: 64px;
+            font-size: clamp(58px, 6.3vw, 122px);
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.05;
             color: var(--text-dark);
-            margin-bottom: 24px;
-            letter-spacing: -1.5px;
+            margin-bottom: 28px;
+            letter-spacing: -2.6px;
         }
 
         .title-highlight {
@@ -171,22 +177,59 @@
             color: var(--text-gray);
             line-height: 1.5;
             margin-bottom: 48px;
-            max-width: 630px;
+            max-width: 680px;
         }
 
         .hero-actions {
             display: flex;
-            gap: 16px;
+            gap: 18px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
+        .hero-main-btn {
+            padding: 14px 30px;
+            font-size: 15px;
+            min-height: auto;
+        }
+
+        .hero-outline-btn {
+            background: #ffffff;
+            border: 1px solid #d6deea;
+            color: var(--text-dark);
+            padding: 14px 30px;
+            font-size: 15px;
+            min-height: auto;
+        }
+
+        @media (max-width: 1200px) {
+            .logo { font-size: 24px; }
+            .logo-subtitle { font-size: 12px; }
+            .btn { font-size: 15px; }
+            .header-btn { font-size: 14px; }
+            .status-badge { font-size: 14px; }
+            .hero-main-btn,
+            .hero-outline-btn { font-size: 15px; }
+        }
+
         @media (max-width: 768px) {
-            .hero-title { font-size: 48px; }
-            .header { padding: 16px 24px; }
+            .hero-title { font-size: 48px; letter-spacing: -1px; }
+            .hero-subtitle { font-size: 19px; }
+            .header { padding: 16px 20px; }
+            .logo { font-size: 23px; }
+            .logo-subtitle { font-size: 14px; padding-left: 20px; }
+            .status-badge { font-size: 14px; margin-bottom: 36px; }
+            .status-dot { width: 8px; height: 8px; }
+            .hero { padding-top: 70px; }
+            .hero-main-btn,
+            .hero-outline-btn {
+                font-size: 16px;
+                min-height: 50px;
+                padding: 14px 24px;
+            }
         }
         @media (max-width: 480px) {
-            .hero-title { font-size: 40px; }
+            .hero-title { font-size: 38px; }
             .hero-actions { flex-direction: column; width: 100%; }
             .btn { width: 100%; justify-content: center; }
             .header-btn { display: none; }
@@ -222,39 +265,42 @@
         </a>
     </header>
 
-    <main class="hero">
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            Auburn's largest lost and found network
-        </div>
-        
-        <h1 class="hero-title">
-            Lost or found something<br>
-            <span class="title-highlight">in Auburn?</span>
-        </h1>
-        
-        <p class="hero-subtitle">
-            Report something lost or found and let our community help reunite it with their owners
-        </p>
-        
-        <div class="hero-actions">
-            <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Report a lost item
-            </a>
-            
-            <a href="{{ route('items.index') }}" class="btn btn-outline">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Browse items
-            </a>
-        </div>
-    </main>
+    <div class="hero-wrap">
+        <main class="hero">
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                Auburn's largest lost and found network
+            </div>
+
+            <h1 class="hero-title">
+                Lost or found something<br>
+                <span class="title-highlight">in Auburn?</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Report something lost or found and let our community help reunite
+                it with their owners
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ route('reports.lost.create') }}" class="btn btn-primary hero-main-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Report a lost item
+                </a>
+
+                <a href="{{ route('items.index') }}" class="btn hero-outline-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    Browse items
+                </a>
+            </div>
+        </main>
+    </div>
 
 </body>
 </html>

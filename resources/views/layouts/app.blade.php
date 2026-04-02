@@ -3,359 +3,291 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Lost and Found Management System')</title>
+    <title>@yield('title', 'Lost & Found | Auburn')</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            color-scheme: dark;
-            --bg: #0d1117;
-            --bg-soft: #111827;
-            --panel: #151f2f;
-            --line: #2a3547;
-            --text: #e6edf3;
-            --muted: #9aa8bc;
-            --accent: #4ade80;
-            --danger: #fb7185;
+            --primary: #4338ca;
+            --primary-hover: #3730a3;
+            --secondary: #0ea5e9;
+            --text-dark: #0f172a;
+            --text-gray: #475569;
+            --text-light: #94a3b8;
+            --bg-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --green: #22c55e;
+            --danger: #ef4444;
         }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
             min-height: 100vh;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at top right, #1d2a42 0%, transparent 40%),
-                radial-gradient(circle at bottom left, #113b2c 0%, transparent 45%),
-                var(--bg);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
 
-        .page {
-            width: min(100%, 1100px);
-            margin: 0 auto;
-            padding: 24px 18px 40px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 48px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
-        .topbar {
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-decoration: none;
+            outline: none;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 2px;
+            color: var(--text-dark);
+            text-transform: uppercase;
         }
 
-        .brand {
-            margin: 0;
-            font-size: 18px;
-            letter-spacing: 0.4px;
+        .logo-arch {
+            position: relative;
         }
 
-        .brand span {
-            color: var(--accent);
+        .logo-subtitle {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-gray);
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding-left: 24px;
         }
 
         .nav-links {
             display: flex;
-            gap: 10px;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .btn {
             display: inline-flex;
-            align-items: center;
             justify-content: center;
-            border: 1px solid var(--line);
-            color: var(--text);
-            background: transparent;
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            cursor: pointer;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
             font-size: 14px;
-        }
-
-        .btn:hover {
-            border-color: #3a4a62;
-            background: rgba(255, 255, 255, 0.03);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
         }
 
         .btn-primary {
-            border-color: #2563eb;
-            background: #1d4ed8;
-            color: #fff;
+            background-color: var(--primary);
+            color: white;
         }
 
         .btn-primary:hover {
-            background: #1e40af;
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background-color: white;
+            color: var(--text-dark);
+            border-color: var(--border-color);
+        }
+
+        .btn-outline:hover {
+            border-color: #cbd5e1;
+            background-color: #f8fafc;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--text-gray);
+        }
+        
+        .btn-ghost:hover {
+            color: var(--text-dark);
+            background-color: #f1f5f9;
+        }
+
+        main.content {
+            flex: 1;
+            padding: 40px 24px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 20px;
+            }
+            .nav-links {
+                gap: 8px;
+            }
+        }
+        
+        /* Utility classes for content specific pages */
+        .page-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 32px;
+            letter-spacing: -0.5px;
         }
 
         .card {
-            width: min(100%, 520px);
-            margin: 0 auto;
-            background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-            border: 1px solid var(--line);
-            border-radius: 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 24px;
-            backdrop-filter: blur(6px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
         }
 
-        .card h1,
-        .card h2 {
-            margin-top: 0;
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
             margin-bottom: 8px;
         }
 
-        .subtitle {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--muted);
-        }
-
-        .field {
-            margin-bottom: 14px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
+        .form-input, .form-select, .form-textarea {
             width: 100%;
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px 12px;
-            background: var(--bg-soft);
-            color: var(--text);
-            font-size: 15px;
-        }
-
-        input[type="date"],
-        input[type="file"],
-        .form-textarea {
-            width: 100%;
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px 12px;
-            background: var(--bg-soft);
-            color: var(--text);
-            font-size: 15px;
+            padding: 10px 14px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14.5px;
+            color: var(--text-dark);
+            transition: all 0.2s;
         }
 
         .form-textarea {
-            resize: vertical;
             min-height: 120px;
+            resize: vertical;
         }
 
-        input:focus {
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
-            border-color: #5b7fb5;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
         }
-
-        .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        .checkbox input {
-            width: auto;
-            margin: 0;
-        }
-
-        .helper-text {
-            color: var(--muted);
-            font-size: 14px;
-            margin-top: 16px;
-        }
-
-        .helper-text a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-
-        .helper-text a:hover {
-            text-decoration: underline;
-        }
-
+        
         .alert {
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
             font-size: 14px;
         }
 
-        .alert-success {
-            background: rgba(74, 222, 128, 0.12);
-            border: 1px solid rgba(74, 222, 128, 0.35);
-            color: #a7f3d0;
-        }
+        .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-        .alert-error {
-            background: rgba(251, 113, 133, 0.12);
-            border: 1px solid rgba(251, 113, 133, 0.35);
-            color: #fecdd3;
-        }
-
-        .alert ul {
-            margin: 0;
-            padding-left: 18px;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 18px;
-        }
-
-        .dashboard-shell {
-            background:
-                linear-gradient(155deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-                linear-gradient(330deg, rgba(74, 222, 128, 0.08), transparent 35%);
-        }
-
-        .dashboard-heading {
-            margin-bottom: 10px;
-        }
-
-        .dashboard-grid--wide {
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            margin-top: 12px;
-            margin-bottom: 18px;
-        }
-
-        .dashboard-section-title {
-            font-size: 14px;
+        /* General Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--muted);
-            margin-top: 6px;
-            margin-bottom: 10px;
         }
-
-        .stat {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 14px;
-            background: rgba(17, 24, 39, 0.65);
-        }
-
-        .stat .value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 12px;
-        }
-
-        .action-card {
-            display: block;
-            text-decoration: none;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 14px;
-            color: var(--text);
-            background: rgba(17, 24, 39, 0.65);
-            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-        }
-
-        .action-card:hover {
-            transform: translateY(-2px);
-            border-color: #4b607d;
-            background: rgba(23, 33, 50, 0.85);
-        }
-
-        .action-card h3 {
-            margin: 0 0 6px;
-            font-size: 16px;
-        }
-
-        .action-card p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.45;
-        }
-
-        .action-card--lost {
-            border-left: 4px solid #fb7185;
-        }
-
-        .action-card--found {
-            border-left: 4px solid #4ade80;
-        }
-
-        .action-card--browse {
-            border-left: 4px solid #38bdf8;
-        }
-
-        .action-card--claims {
-            border-left: 4px solid #facc15;
-        }
-
-        .stat .label {
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        @media (max-width: 640px) {
-            .page {
-                padding: 16px 12px 28px;
-            }
-
-            .card {
-                padding: 18px;
-            }
-
-            .brand {
-                font-size: 16px;
-            }
-        }
+        .badge-lost { background-color: #fef2f2; color: #ef4444; }
+        .badge-found { background-color: #f0fdf4; color: #22c55e; }
+        .badge-neutral { background-color: #f1f5f9; color: #64748b; }
     </style>
 </head>
 <body>
-<div class="page">
-    <header class="topbar">
-        <h1 class="brand">Lost &amp; Found <span>Management System</span></h1>
+
+    <header class="header">
+        <a href="{{ route('home') }}" class="logo-container">
+            <div class="logo">
+                L
+                <svg class="logo-arch" width="12" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 22A8 8 0 0 1 20 22" />
+                </svg>
+                ST &amp; FOUND
+            </div>
+            <div class="logo-subtitle">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Auburn
+            </div>
+        </a>
 
         <div class="nav-links">
+            <a href="{{ route('items.index') }}" class="btn btn-ghost">Browse</a>
+            
             @auth
-                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}" class="btn">Dashboard</a>
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}" class="btn btn-outline">Dashboard</a>
 
-                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
                     @csrf
-                    <button type="submit" class="btn">Logout</button>
+                    <button type="submit" class="btn btn-ghost">Logout</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="btn">Login</a>
+                <a href="{{ route('login') }}" class="btn btn-ghost">Login</a>
                 <a href="{{ route('register') }}" class="btn btn-primary">Sign up</a>
             @endauth
         </div>
     </header>
 
-    @yield('content')
-</div>
+    <main class="content">
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if ($errors->any() && !request()->routeIs('login') && !request()->routeIs('register'))
+            <div class="alert alert-error">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @yield('content')
+    </main>
+
 </body>
 </html>
