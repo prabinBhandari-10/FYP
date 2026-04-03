@@ -463,6 +463,74 @@
             transform: translateY(0);
         }
 
+        .site-footer-quick {
+            width: min(860px, 100%);
+            margin: 16px auto 0;
+            position: relative;
+            z-index: 2;
+            border-radius: 14px;
+            border: 1px solid rgba(130, 165, 210, 0.35);
+            background: rgba(11, 25, 48, 0.72);
+            padding: 18px 14px 10px;
+        }
+
+        .site-footer-inner {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.2fr) minmax(0, 1.8fr);
+            gap: 20px;
+        }
+
+        .site-footer-brand h3 {
+            margin: 0 0 8px;
+            font-size: 24px;
+            line-height: 1;
+            text-transform: uppercase;
+            color: #e9f3ff;
+            letter-spacing: -0.4px;
+        }
+
+        .site-footer-brand p {
+            margin: 0;
+            color: #abc2e4;
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+
+        .site-footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 14px;
+        }
+
+        .site-footer-col h4 {
+            margin: 0 0 8px;
+            color: #d7e7ff;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .site-footer-col a {
+            display: block;
+            margin-bottom: 7px;
+            color: #acc5e8;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .site-footer-col a:hover {
+            color: #f3f8ff;
+            text-decoration: underline;
+        }
+
+        .site-footer-bottom {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(123, 159, 206, 0.32);
+            color: #9cb5d9;
+            font-size: 0.8rem;
+        }
+
         @keyframes cardEntrance {
             from {
                 opacity: 0;
@@ -499,6 +567,14 @@
                 flex-direction: column-reverse;
                 align-items: stretch;
             }
+
+            .site-footer-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .site-footer-links-grid {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
         }
 
         @media (max-width: 560px) {
@@ -524,6 +600,10 @@
             .toggle-btn {
                 padding: 8px 11px;
                 font-size: 0.8rem;
+            }
+
+            .site-footer-links-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -576,6 +656,10 @@
 
             <form action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data" id="itemForm">
                 @csrf
+
+                @php
+                    [$oldBlock, $oldPlace] = array_pad(explode(' - ', (string) old('location'), 2), 2, '');
+                @endphp
 
                 <input type="hidden" name="type" id="typeField" value="{{ old('type', 'lost') }}">
 
@@ -644,17 +728,34 @@
                     </div>
 
                     <div class="field field-full">
-                        <label for="location" class="field-label">
+                        <label for="block" class="field-label">
                             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 4.8 5.2 10.8 6.2 11.9a1 1 0 0 0 1.6 0C13.8 19.8 19 13.8 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg>
-                            Location
+                            Block
                         </label>
-                        <div class="location-row">
-                            <div class="control-wrap">
-                                <svg class="control-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Z"/></svg>
-                                <input type="text" id="location" name="location" class="control" value="{{ old('location') }}" placeholder="Example: Central Library, Block A" required>
-                            </div>
-                            <button type="button" class="geo-btn" id="pinMyLocation">Use current location</button>
+                        <div class="control-wrap">
+                            <svg class="control-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg>
+                            <select id="block" class="control-select" required data-old-block="{{ old('block', $oldBlock) }}">
+                                <option value="">Select block</option>
+                                <option value="Nepal Block">Nepal Block (Inside College)</option>
+                                <option value="UK Block">UK Block (Inside College)</option>
+                                <option value="Pokhara City">Pokhara City (Outside College)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="field field-full">
+                        <label for="place" class="field-label">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 4.8 5.2 10.8 6.2 11.9a1 1 0 0 0 1.6 0C13.8 19.8 19 13.8 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg>
+                            Place
+                        </label>
+                        <div class="control-wrap">
+                            <svg class="control-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Z"/></svg>
+                            <select id="place" class="control-select" required data-old-place="{{ old('place', $oldPlace) }}">
+                                <option value="">Select place</option>
+                            </select>
+                        </div>
+
+                        <input type="hidden" id="location" name="location" value="{{ old('location') }}">
                         @error('location')
                             <p class="field-error">{{ $message }}</p>
                         @enderror
@@ -691,6 +792,8 @@
             </form>
         </section>
     </main>
+
+    @include('partials.site-footer')
 </div>
 
 <script>
@@ -702,8 +805,77 @@
         const imageInput = document.getElementById('image');
         const previewImage = document.getElementById('previewImage');
         const previewText = document.getElementById('previewText');
+        const blockSelect = document.getElementById('block');
+        const placeSelect = document.getElementById('place');
         const locationInput = document.getElementById('location');
-        const geoButton = document.getElementById('pinMyLocation');
+
+        const locationByBlock = {
+            'Nepal Block': [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche'
+            ],
+            'UK Block': [
+                'Basketball Court',
+                'Library',
+                'Canteen',
+                'Parking Area',
+                'Table Tennis Board'
+            ],
+            'Pokhara City': [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar'
+            ]
+        };
+
+        function updateHiddenLocation() {
+            if (blockSelect.value && placeSelect.value) {
+                locationInput.value = `${blockSelect.value} - ${placeSelect.value}`;
+                return;
+            }
+
+            locationInput.value = '';
+        }
+
+        function populatePlaces() {
+            const block = blockSelect.value;
+            const options = locationByBlock[block] || [];
+            const oldPlace = placeSelect.dataset.oldPlace || '';
+
+            placeSelect.innerHTML = '<option value="">Select place</option>';
+
+            options.forEach((place) => {
+                const option = document.createElement('option');
+                option.value = place;
+                option.textContent = place;
+
+                if (place === oldPlace) {
+                    option.selected = true;
+                }
+
+                placeSelect.appendChild(option);
+            });
+
+            updateHiddenLocation();
+        }
 
         function applyType(type) {
             typeField.value = type;
@@ -729,6 +901,18 @@
 
         applyType(typeField.value || 'lost');
 
+        if (blockSelect.dataset.oldBlock) {
+            blockSelect.value = blockSelect.dataset.oldBlock;
+        }
+        populatePlaces();
+
+        blockSelect.addEventListener('change', function () {
+            placeSelect.dataset.oldPlace = '';
+            populatePlaces();
+        });
+
+        placeSelect.addEventListener('change', updateHiddenLocation);
+
         imageInput.addEventListener('change', function () {
             const file = this.files && this.files[0];
 
@@ -749,17 +933,6 @@
             reader.readAsDataURL(file);
         });
 
-        geoButton.addEventListener('click', function () {
-            if (!navigator.geolocation) {
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(function (position) {
-                const lat = position.coords.latitude.toFixed(5);
-                const lng = position.coords.longitude.toFixed(5);
-                locationInput.value = `Lat ${lat}, Lng ${lng}`;
-            });
-        });
     })();
 </script>
 </body>

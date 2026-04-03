@@ -232,6 +232,98 @@
         .badge-lost { background-color: #fef2f2; color: #ef4444; }
         .badge-found { background-color: #f0fdf4; color: #22c55e; }
         .badge-neutral { background-color: #f1f5f9; color: #64748b; }
+
+        .site-footer-quick {
+            margin-top: 18px;
+            border-top: 1px solid var(--border-color);
+            background: #f1f5f9;
+            padding: 30px 24px 16px;
+        }
+
+        .site-footer-inner {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(240px, 1.2fr) minmax(0, 1.8fr);
+            gap: 26px;
+            align-items: start;
+        }
+
+        .site-footer-brand h3 {
+            margin: 0 0 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 28px;
+            line-height: 1.1;
+            letter-spacing: -0.4px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        .site-footer-brand p {
+            margin: 0;
+            color: var(--text-gray);
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 520px;
+        }
+
+        .site-footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(140px, 1fr));
+            gap: 18px;
+        }
+
+        .site-footer-col h4 {
+            margin: 0 0 10px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .site-footer-col a {
+            display: block;
+            margin-bottom: 8px;
+            text-decoration: none;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .site-footer-col a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .site-footer-bottom {
+            width: min(1200px, 100%);
+            margin: 22px auto 0;
+            padding-top: 14px;
+            border-top: 1px solid #d7dee8;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .site-footer-quick {
+                padding: 22px 20px 14px;
+            }
+
+            .site-footer-inner {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .site-footer-links-grid {
+                grid-template-columns: repeat(2, minmax(130px, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .site-footer-links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -281,6 +373,8 @@
 
         @yield('content')
     </main>
+
+    @include('partials.site-footer')
 
 </body>
 </html>

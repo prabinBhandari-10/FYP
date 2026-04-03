@@ -64,9 +64,31 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="location">Location</label>
-                        <input class="form-input" type="text" id="location" name="location" placeholder="e.g. RBC Libary, Student Center" value="{{ old('location') }}" required>
+                        <label class="form-label" for="block">Block</label>
+                        <select class="form-select" id="block" name="block" required>
+                            <option value="">Select block</option>
+                            <option value="Nepal Block" @selected(old('block') === 'Nepal Block')>Nepal Block (Inside College)</option>
+                            <option value="UK Block" @selected(old('block') === 'UK Block')>UK Block (Inside College)</option>
+                            <option value="Pokhara City" @selected(old('block') === 'Pokhara City' || old('block') === 'Pokhara')>Pokhara City (Outside College)</option>
+                        </select>
+                        @error('block')
+                            <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                        @enderror
                     </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label" for="location">Location</label>
+                        <select class="form-select" id="location" name="location" required data-old-location="{{ old('location') }}">
+                            <option value="">Select location</option>
+                        </select>
+                        @error('location')
+                            <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div></div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -119,4 +141,75 @@
     }
 }
 </style>
+
+<script>
+    (function () {
+        const blockSelect = document.getElementById('block');
+        const locationSelect = document.getElementById('location');
+        const oldLocation = locationSelect.dataset.oldLocation || '';
+
+        const locationByBlock = {
+            'Nepal Block': [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche'
+            ],
+            'UK Block': [
+                'Basketball Court',
+                'Library',
+                'Canteen',
+                'Parking Area',
+                'Table Tennis Board'
+            ],
+            'Pokhara City': [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar'
+            ]
+        };
+
+        function populateLocations() {
+            const selectedBlock = blockSelect.value;
+            const options = locationByBlock[selectedBlock] || [];
+
+            locationSelect.innerHTML = '<option value="">Select location</option>';
+
+            options.forEach((place) => {
+                const option = document.createElement('option');
+                option.value = place;
+                option.textContent = place;
+
+                if (oldLocation === place) {
+                    option.selected = true;
+                }
+
+                locationSelect.appendChild(option);
+            });
+        }
+
+        blockSelect.addEventListener('change', function () {
+            locationSelect.dataset.oldLocation = '';
+            populateLocations();
+        });
+
+        populateLocations();
+    })();
+</script>
 @endsection

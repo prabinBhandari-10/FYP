@@ -252,6 +252,88 @@
             text-decoration: underline;
         }
 
+        .site-footer-quick {
+            width: min(980px, 100%);
+            margin-top: 16px;
+            border-top: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: #f1f5f9;
+            padding: 20px 16px 12px;
+        }
+
+        .site-footer-inner {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.2fr) minmax(0, 1.8fr);
+            gap: 20px;
+        }
+
+        .site-footer-brand h3 {
+            margin: 0 0 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            line-height: 1;
+            text-transform: uppercase;
+            color: var(--text-dark);
+        }
+
+        .site-footer-brand p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        .site-footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 16px;
+        }
+
+        .site-footer-col h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .site-footer-col a {
+            display: block;
+            margin-bottom: 7px;
+            text-decoration: none;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .site-footer-col a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .site-footer-bottom {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #d6deea;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+        @media (max-width: 760px) {
+            .site-footer-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .site-footer-links-grid {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .site-footer-links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 480px) {
             .card {
                 padding: 32px 24px;
@@ -353,6 +435,8 @@
             </div>
         </div>
     </div>
+
+    @include('partials.site-footer')
 
 </body>
 </html>

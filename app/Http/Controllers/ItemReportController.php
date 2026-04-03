@@ -88,14 +88,64 @@ class ItemReportController extends Controller
 
     protected function storeReport(Request $request, string $type)
     {
+        $locationByBlock = [
+            'Nepal Block' => [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche',
+            ],
+            'UK Block' => [
+                'Basketball Court',
+                'Library',
+                'Canteen',
+                'Parking Area',
+                'Table Tennis Board',
+            ],
+            'Pokhara City' => [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar',
+            ],
+        ];
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:100'],
+            'block' => ['required', 'string', 'in:Nepal Block,UK Block,Pokhara City,Pokhara'],
             'location' => ['required', 'string', 'max:255'],
             'date' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
         ]);
+
+        if ($validated['block'] === 'Pokhara') {
+            $validated['block'] = 'Pokhara City';
+        }
+
+        if (! in_array($validated['location'], $locationByBlock[$validated['block']] ?? [], true)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'location' => 'Please select a valid location for the selected block.',
+                ]);
+        }
 
         $imagePath = null;
 
@@ -109,7 +159,7 @@ class ItemReportController extends Controller
             'description' => $validated['description'],
             'type' => $type,
             'category' => $validated['category'],
-            'location' => $validated['location'],
+            'location' => $validated['block'] . ' - ' . $validated['location'],
             'date' => $validated['date'],
             'image' => $imagePath,
             'status' => 'open',

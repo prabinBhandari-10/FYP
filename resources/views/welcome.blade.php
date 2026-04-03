@@ -303,6 +303,92 @@
             .header .btn { display: none; }
             .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
         }
+
+        .site-footer-quick {
+            margin-top: 44px;
+            width: min(980px, 100%);
+            border-top: 1px solid #d9e3f0;
+            background: rgba(241, 245, 249, 0.92);
+            border-radius: 18px;
+            padding: 26px 20px 14px;
+            z-index: 10;
+        }
+
+        .site-footer-inner {
+            display: grid;
+            grid-template-columns: minmax(240px, 1.2fr) minmax(0, 1.8fr);
+            gap: 22px;
+        }
+
+        .site-footer-brand h3 {
+            margin: 0 0 10px;
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            text-transform: uppercase;
+            color: #0f172a;
+            line-height: 1;
+        }
+
+        .site-footer-brand p {
+            margin: 0;
+            color: var(--text-gray);
+            font-family: 'Inter', sans-serif;
+            font-size: 17px;
+            line-height: 1.55;
+        }
+
+        .site-footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(130px, 1fr));
+            gap: 18px;
+        }
+
+        .site-footer-col h4 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .site-footer-col a {
+            display: block;
+            margin-bottom: 9px;
+            color: #475569;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .site-footer-col a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .site-footer-bottom {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid #d4deeb;
+            font-family: 'Inter', sans-serif;
+            color: #52637d;
+            font-size: 15px;
+        }
+
+        @media (max-width: 860px) {
+            .site-footer-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .site-footer-links-grid {
+                grid-template-columns: repeat(2, minmax(130px, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .site-footer-links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -384,6 +470,8 @@
                 </div>
             </div>
         </div>
+
+        @include('partials.site-footer')
     </div>
 
 </body>

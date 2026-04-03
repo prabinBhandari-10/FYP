@@ -3,6 +3,13 @@
 @section('title', $report->title . ' | Lost & Found Auburn')
 
 @section('content')
+@php
+    [$locationBlock, $locationPlace] = array_pad(explode(' - ', (string) $report->location, 2), 2, '');
+    if ($locationPlace === '') {
+        $locationPlace = $locationBlock;
+        $locationBlock = 'Not specified';
+    }
+@endphp
 <div style="max-width: 1000px; margin: 0 auto;">
 
     <div style="margin-bottom: 32px;">
@@ -64,8 +71,18 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         </div>
                         <div>
-                            <div style="font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 2px;">Location</div>
-                            <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $report->location }}</div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 2px;">Block</div>
+                            <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $locationBlock }}</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div style="color: var(--text-light); padding-top: 2px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 2px;">Place</div>
+                            <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $locationPlace }}</div>
                         </div>
                     </div>
                     
