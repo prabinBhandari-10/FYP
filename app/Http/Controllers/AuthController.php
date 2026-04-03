@@ -111,7 +111,51 @@ class AuthController extends Controller
 
     public function adminDashboard()
     {
-        return view('admin.dashboard');
+        $stats = [
+            'totalUsers' => 0,
+            'totalReports' => 0,
+            'openReports' => 0,
+            'pendingClaims' => 0,
+            'approvedClaims' => 0,
+        ];
+
+        $recentReports = collect();
+        $recentClaims = collect();
+
+        if (Schema::hasTable('users')) {
+            $stats['totalUsers'] = User::count();
+        }
+
+        if (Schema::hasTable('reports')) {
+            $stats['totalReports'] = Report::count();
+
+            if (Schema::hasColumn('reports', 'status')) {
+                $stats['openReports'] = Report::where('status', 'open')->count();
+            }
+
+            $recentReports = Report::query()
+                ->with('user')
+                ->latest()
+                ->take(5)
+                ->get();
+        }
+
+        if (Schema::hasTable('claims')) {
+            if (Schema::hasColumn('claims', 'status')) {
+                $stats['pendingClaims'] = DB::table('claims')->where('status', 'pending')->count();
+                $stats['approvedClaims'] = DB::table('claims')->where('status', 'approved')->count();
+            }
+
+            $recentClaims = DB::table('claims')
+                ->leftJoin('users', 'users.id', '=', 'claims.user_id')
+                ->leftJoin('reports', 'reports.id', '=', 'claims.item_id')
+                ->select('claims.id', 'claims.status', 'claims.created_at', 'users.name as claimant_name', 'reports.title as report_title')
+                ->orderByDesc('claims.created_at')
+                ->take(5)
+                ->get();
+        }
+
+        return view('admin.dashboard', compact('stats', 'recentReports', 'recentClaims'));
     }
 
     protected function redirectPathForRole(User $user): string

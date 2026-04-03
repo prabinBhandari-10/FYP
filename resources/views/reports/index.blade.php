@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Browse Items | Lost & Found Auburn')
+@section('title', 'Browse Items | Lost & Found')
 
 @section('content')
 <div style="max-width: 1000px; margin: 0 auto;">

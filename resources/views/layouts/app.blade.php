@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Lost & Found | Auburn')</title>
+    <title>@yield('title', 'Lost & Found')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -244,13 +244,6 @@
                     <path d="M4 22A8 8 0 0 1 20 22" />
                 </svg>
                 ST &amp; FOUND
-            </div>
-            <div class="logo-subtitle">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-                Auburn
             </div>
         </a>
 
