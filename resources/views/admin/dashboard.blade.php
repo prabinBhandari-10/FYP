@@ -130,6 +130,11 @@
                 <div class="value">{{ $stats['approvedClaims'] }}</div>
                 <div class="label">Approved claims</div>
             </div>
+
+            <div class="stat">
+                <div class="value">{{ $stats['heldClaims'] }}</div>
+                <div class="label">Held claims</div>
+            </div>
         </div>
 
         <div class="actions-row">
@@ -190,7 +195,15 @@
                             <td>{{ $claim->report_title ?? 'Item removed' }}</td>
                             <td>{{ $claim->claimant_name ?? 'Unknown' }}</td>
                             <td>
-                                <span class="status-pill status-{{ $claim->status }}">{{ $claim->status }}</span>
+                                @php
+                                    $statusClass = $claim->status;
+                                    $statusLabel = $claim->status;
+                                    if ($claim->status === 'pending' && $claim->held_at) {
+                                        $statusClass = 'pending';
+                                        $statusLabel = 'on hold';
+                                    }
+                                @endphp
+                                <span class="status-pill status-{{ $statusClass }}">{{ $statusLabel }}</span>
                             </td>
                             <td>{{ \Carbon\Carbon::parse($claim->created_at)->diffForHumans() }}</td>
                         </tr>

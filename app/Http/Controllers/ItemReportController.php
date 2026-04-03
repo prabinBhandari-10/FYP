@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ReportSubmitted;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
@@ -102,7 +103,7 @@ class ItemReportController extends Controller
             $imagePath = $request->file('image')->store('reports', 'public');
         }
 
-        Report::create([
+        $report = Report::create([
             'user_id' => $request->user()->id,
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -113,6 +114,8 @@ class ItemReportController extends Controller
             'image' => $imagePath,
             'status' => 'open',
         ]);
+
+        event(new ReportSubmitted($report, $request->user()));
 
         return redirect()->route('dashboard')->with('success', 'Item report submitted successfully.');
     }

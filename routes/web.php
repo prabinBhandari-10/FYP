@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\ItemReportController;
 use Illuminate\Support\Facades\Route;
@@ -37,14 +38,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');
     });
 
-    Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
         ->middleware('role:admin')
         ->name('admin.dashboard');
 
     Route::middleware('role:admin')->group(function () {
-        Route::get('/admin/claims', [ClaimController::class, 'adminIndex'])->name('admin.claims.index');
-        Route::patch('/admin/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('admin.claims.approve');
-        Route::patch('/admin/claims/{claim}/reject', [ClaimController::class, 'reject'])->name('admin.claims.reject');
+        Route::get('/admin/claims', [AdminController::class, 'claimsIndex'])->name('admin.claims.index');
+        Route::patch('/admin/claims/{claim}/approve', [AdminController::class, 'approve'])->name('admin.claims.approve');
+        Route::patch('/admin/claims/{claim}/reject', [AdminController::class, 'reject'])->name('admin.claims.reject');
+        Route::patch('/admin/claims/{claim}/hold', [AdminController::class, 'hold'])->name('admin.claims.hold');
+        Route::patch('/admin/users/{user}/block', [AdminController::class, 'blockUser'])->name('admin.users.block');
+        Route::delete('/admin/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

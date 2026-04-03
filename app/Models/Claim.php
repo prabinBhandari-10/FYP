@@ -18,7 +18,15 @@ class Claim extends Model
         'proof_text',
         'proof_photo_path',
         'status',
+        'held_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'held_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {

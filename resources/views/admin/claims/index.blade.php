@@ -4,37 +4,22 @@
 
 @section('content')
     <style>
-        :root {
-            --bg-dark: #080d1a;
-            --bg-card: rgba(10, 16, 30, 0.72);
-            --barca-blue: #1f3a8a;
-            --barca-maroon: #7a1026;
-            --barca-gold: #d1a74a;
-            --text-main: #e7eaf4;
-            --text-soft: #a5aec3;
-        }
-
         .lf-page {
             min-height: calc(100vh - 120px);
-            padding: 36px 12px 64px;
-            background:
-                radial-gradient(1100px 520px at 85% -15%, rgba(31, 58, 138, 0.25), transparent 60%),
-                radial-gradient(900px 420px at -10% 25%, rgba(122, 16, 38, 0.22), transparent 60%),
-                var(--bg-dark);
-            color: var(--text-main);
+            padding: 20px 0 36px;
         }
 
         .lf-container {
-            width: min(1120px, 100%);
+            width: min(1160px, 100%);
             margin: 0 auto;
             display: grid;
-            gap: 18px;
+            gap: 14px;
         }
 
         .lf-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(31, 58, 138, 0.25);
-            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 18px;
             display: grid;
             gap: 12px;
@@ -48,14 +33,15 @@
         .lf-table th,
         .lf-table td {
             text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid rgba(31, 58, 138, 0.2);
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
             font-size: 13px;
-            color: var(--text-soft);
+            color: var(--text-gray);
+            vertical-align: top;
         }
 
         .lf-table th {
-            color: var(--text-main);
+            color: var(--text-dark);
             font-weight: 600;
         }
 
@@ -66,9 +52,9 @@
             font-size: 11px;
             padding: 6px 10px;
             border-radius: 999px;
-            background: rgba(209, 167, 74, 0.12);
-            border: 1px solid rgba(209, 167, 74, 0.28);
-            color: var(--barca-gold);
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
         }
 
         .lf-actions {
@@ -79,33 +65,45 @@
 
         .lf-btn {
             padding: 8px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(31, 58, 138, 0.35);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
             cursor: pointer;
-            color: var(--text-main);
-            background: linear-gradient(135deg, rgba(31, 58, 138, 0.28), rgba(122, 16, 38, 0.28));
+            color: var(--text-dark);
+            background: #ffffff;
             text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            font-size: 12px;
         }
 
         .lf-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 16px 36px rgba(31, 58, 138, 0.35);
+            background: #f8fafc;
+            border-color: #cbd5e1;
         }
 
         .lf-btn-primary {
-            border: none;
             font-weight: 600;
-            background: linear-gradient(135deg, var(--barca-blue), var(--barca-maroon));
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .lf-btn-primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
         }
 
         .lf-empty {
-            background: var(--bg-card);
-            border: 1px solid rgba(31, 58, 138, 0.25);
-            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 24px;
-            color: var(--text-soft);
+            color: var(--text-gray);
             text-align: center;
+        }
+
+        .lf-meta {
+            color: var(--text-gray);
+            font-size: 13px;
         }
     </style>
 
@@ -113,7 +111,7 @@
         <div class="lf-container">
             <div>
                 <h2>Manage Claims</h2>
-                <p class="lf-meta">Review and approve or reject claim requests.</p>
+                <p class="lf-meta">View all claims, check uploaded documents, and take moderation actions.</p>
             </div>
 
             @if (session('success'))
@@ -133,6 +131,7 @@
                                 <th>Reporter</th>
                                 <th>Claimant</th>
                                 <th>Status</th>
+                                <th>Documents</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -141,8 +140,40 @@
                                 <tr>
                                     <td>{{ $claim->report?->title ?? 'Item' }}</td>
                                     <td>{{ $claim->report?->user?->name ?? 'Unknown' }}</td>
-                                    <td>{{ $claim->user?->name ?? 'User' }}</td>
-                                    <td><span class="lf-badge">{{ ucfirst($claim->status) }}</span></td>
+                                    <td>
+                                        <div>{{ $claim->user?->name ?? 'User' }}</div>
+                                        <div class="lf-meta" style="font-size: 11px;">
+                                            Rejected claims: {{ $rejectedCounts[$claim->user_id] ?? 0 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if ($claim->status === 'pending' && $claim->held_at)
+                                            <span class="lf-badge">On hold</span>
+                                        @else
+                                            <span class="lf-badge">{{ ucfirst($claim->status) }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="lf-actions">
+                                            @if ($claim->citizenship_document_path)
+                                                <a class="lf-btn" target="_blank" href="{{ Illuminate\Support\Facades\Storage::url($claim->citizenship_document_path) }}">Citizenship</a>
+                                            @endif
+
+                                            @if ($claim->proof_photo_path)
+                                                <a class="lf-btn" target="_blank" href="{{ Illuminate\Support\Facades\Storage::url($claim->proof_photo_path) }}">Proof Photo</a>
+                                            @endif
+
+                                            @if (! $claim->citizenship_document_path && ! $claim->proof_photo_path)
+                                                <span class="lf-meta">No files</span>
+                                            @endif
+                                        </div>
+
+                                        @if ($claim->proof_text)
+                                            <div class="lf-meta" style="margin-top: 8px; max-width: 280px;">
+                                                {{ Illuminate\Support\Str::limit($claim->proof_text, 80) }}
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="lf-actions">
                                             <a class="lf-btn" href="{{ $claim->report ? route('items.show', $claim->report) : '#' }}">View</a>
@@ -152,11 +183,34 @@
                                                     @method('PATCH')
                                                     <button class="lf-btn lf-btn-primary" type="submit">Approve</button>
                                                 </form>
+                                                <form method="POST" action="{{ route('admin.claims.hold', $claim) }}">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button class="lf-btn" type="submit">Hold</button>
+                                                </form>
                                                 <form method="POST" action="{{ route('admin.claims.reject', $claim) }}">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button class="lf-btn" type="submit">Reject</button>
                                                 </form>
+                                            @endif
+
+                                            @if ($claim->user && $claim->user->role !== 'admin')
+                                                @if (! $claim->user->is_blocked)
+                                                    <form method="POST" action="{{ route('admin.users.block', $claim->user) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button class="lf-btn" type="submit">Block user</button>
+                                                    </form>
+                                                @endif
+
+                                                @if (($rejectedCounts[$claim->user_id] ?? 0) >= 3)
+                                                    <form method="POST" action="{{ route('admin.users.destroy', $claim->user) }}" onsubmit="return confirm('Delete this user for repeated fake claims?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="lf-btn" type="submit">Delete user</button>
+                                                    </form>
+                                                @endif
                                             @endif
                                         </div>
                                     </td>
