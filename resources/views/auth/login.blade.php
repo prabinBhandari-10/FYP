@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Lost & Found Auburn</title>
+    <title>Login | Lost & Found</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -378,13 +378,6 @@
                 </svg>
                 ST &amp; FOUND
             </div>
-            <div class="logo-subtitle">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-                Auburn
-            </div>
         </a>
 
         <div class="card">
@@ -412,12 +405,13 @@
 
                 <div class="form-group">
                     <label class="form-label" for="email">Email address</label>
-                    <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="admin@lostfound.test" required autofocus>  
+                    <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email address" required autofocus>  
+                    <div style="margin-top: 6px; font-size: 13px; color: var(--text-gray);">Use your Gmail or registered email address. One email can be used for one account.</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
-                    <input class="form-input" type="password" id="password" name="password" placeholder="••••••••" required>
+                    <input class="form-input" type="password" id="password" name="password" placeholder="Enter your password" required>
                 </div>
 
                 <div class="form-options">
@@ -425,6 +419,7 @@
                         <input type="checkbox" id="remember" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
                         Remember me
                     </label>
+                    <a href="{{ route('password.request') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn">Sign In</button> 

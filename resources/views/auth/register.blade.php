@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Register | Lost & Found Auburn')
+@section('title', 'Register | Lost & Found')
 
 @section('content')
 <div style="min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
@@ -46,6 +46,7 @@
             <div class="form-group">
                 <label class="form-label" for="email">Email address</label>
                 <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="name@example.com" required>
+                <div style="margin-top: 6px; font-size: 13px; color: var(--text-gray);">Each email address can be used for one account only.</div>
             </div>
 
             <div class="form-group">

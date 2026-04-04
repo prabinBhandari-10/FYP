@@ -115,6 +115,26 @@
                             <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $report->user?->name ?? 'Unknown' }}</div>
                         </div>
                     </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div style="color: var(--text-light); padding-top: 2px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V19a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.11 3.18 2 2 0 0 1 4.1 1h2.09a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.62a2 2 0 0 1-.45 2.11L7.1 8.9a16 16 0 0 0 8 8l1.45-1.26a2 2 0 0 1 2.11-.45c.84.29 1.72.5 2.62.62A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 2px;">Contact Phone</div>
+                            <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $report->reporter_phone ?? 'Not provided' }}</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div style="color: var(--text-light); padding-top: 2px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 2px;">Contact Email</div>
+                            <div style="font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ $report->reporter_email ?? 'Not provided' }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

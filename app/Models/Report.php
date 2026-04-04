@@ -13,11 +13,16 @@ class Report extends Model
 
     protected $fillable = [
         'user_id',
+        'reporter_name',
+        'reporter_email',
+        'reporter_phone',
         'title',
         'description',
         'type',
         'category',
         'location',
+        'latitude',
+        'longitude',
         'date',
         'image',
         'status',
@@ -27,6 +32,8 @@ class Report extends Model
     {
         return [
             'date' => 'date',
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 

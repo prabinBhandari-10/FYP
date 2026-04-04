@@ -126,11 +126,16 @@ class ItemReportController extends Controller
         ];
 
         $validated = $request->validate([
+            'reporter_name' => ['required', 'string', 'max:255'],
+            'reporter_email' => ['required', 'string', 'email', 'max:255'],
+            'reporter_phone' => ['required', 'string', 'max:30'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:100'],
             'block' => ['required', 'string', 'in:Nepal Block,UK Block,Pokhara City,Pokhara'],
             'location' => ['required', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'date' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
         ]);
@@ -155,11 +160,16 @@ class ItemReportController extends Controller
 
         $report = Report::create([
             'user_id' => $request->user()->id,
+            'reporter_name' => $validated['reporter_name'],
+            'reporter_email' => $validated['reporter_email'],
+            'reporter_phone' => $validated['reporter_phone'],
             'title' => $validated['title'],
             'description' => $validated['description'],
             'type' => $type,
             'category' => $validated['category'],
             'location' => $validated['block'] . ' - ' . $validated['location'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
             'date' => $validated['date'],
             'image' => $imagePath,
             'status' => 'open',

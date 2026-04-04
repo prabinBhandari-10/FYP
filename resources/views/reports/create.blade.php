@@ -26,6 +26,59 @@
             
             <form method="POST" action="{{ $submitRoute ?? '' }}" enctype="multipart/form-data">
                 @csrf
+
+                <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 12px;">Reporter Contact</h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label" for="reporter_name">Full Name</label>
+                        <input
+                            class="form-input"
+                            type="text"
+                            id="reporter_name"
+                            name="reporter_name"
+                            placeholder="Your full name"
+                            value="{{ old('reporter_name', auth()->user()?->name) }}"
+                            required>
+                        @error('reporter_name')
+                            <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="reporter_phone">Phone Number</label>
+                        <input
+                            class="form-input"
+                            type="text"
+                            id="reporter_phone"
+                            name="reporter_phone"
+                            placeholder="98XXXXXXXX"
+                            value="{{ old('reporter_phone') }}"
+                            required>
+                        @error('reporter_phone')
+                            <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reporter_email">Email Address</label>
+                    <input
+                        class="form-input"
+                        type="email"
+                        id="reporter_email"
+                        name="reporter_email"
+                        placeholder="you@example.com"
+                        value="{{ old('reporter_email', auth()->user()?->email) }}"
+                        required>
+                    @error('reporter_email')
+                        <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 14px 0 22px;">
+
+                <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 24px;">Item Details</h3>
                 
                 <div class="form-group">
                     <label class="form-label" for="title">Title</label>
@@ -91,6 +144,23 @@
                     <div></div>
                 </div>
 
+                <div class="form-group" style="margin-top: 8px;">
+                    <label class="form-label">Pick Exact Spot on Map (optional)</label>
+                    <div id="report-map" style="height: 260px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;"></div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
+                        <button type="button" id="use-current-location" class="btn btn-outline" style="padding: 8px 14px;">Use My Current Location</button>
+                        <span id="map-coords-text" style="font-size: 13px; color: var(--text-gray);">No pin selected yet.</span>
+                    </div>
+                    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                    @error('latitude')
+                        <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                    @error('longitude')
+                        <div style="font-size: 13px; color: #c0392b; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group">
                         <label class="form-label" for="date">Date</label>
@@ -142,11 +212,17 @@
 }
 </style>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
     (function () {
         const blockSelect = document.getElementById('block');
         const locationSelect = document.getElementById('location');
         const oldLocation = locationSelect.dataset.oldLocation || '';
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const coordsText = document.getElementById('map-coords-text');
+        const useCurrentLocationBtn = document.getElementById('use-current-location');
 
         const locationByBlock = {
             'Nepal Block': [
@@ -210,6 +286,67 @@
         });
 
         populateLocations();
+
+        // Leaflet map for precise location pinning.
+        const defaultCenter = [28.2096, 83.9856];
+        const oldLat = parseFloat(latitudeInput.value);
+        const oldLng = parseFloat(longitudeInput.value);
+        const hasOldCoords = Number.isFinite(oldLat) && Number.isFinite(oldLng);
+
+        const map = L.map('report-map').setView(hasOldCoords ? [oldLat, oldLng] : defaultCenter, hasOldCoords ? 15 : 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let marker = null;
+
+        function setCoords(lat, lng) {
+            latitudeInput.value = lat.toFixed(7);
+            longitudeInput.value = lng.toFixed(7);
+            coordsText.textContent = `Pinned: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+            if (!marker) {
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                marker.on('dragend', function (event) {
+                    const point = event.target.getLatLng();
+                    setCoords(point.lat, point.lng);
+                });
+            } else {
+                marker.setLatLng([lat, lng]);
+            }
+        }
+
+        if (hasOldCoords) {
+            setCoords(oldLat, oldLng);
+        }
+
+        map.on('click', function (event) {
+            setCoords(event.latlng.lat, event.latlng.lng);
+        });
+
+        useCurrentLocationBtn.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                coordsText.textContent = 'Geolocation is not supported in this browser.';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 16);
+                    setCoords(lat, lng);
+                },
+                function () {
+                    coordsText.textContent = 'Could not access your current location.';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                }
+            );
+        });
     })();
 </script>
 @endsection
