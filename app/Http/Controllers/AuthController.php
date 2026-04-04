@@ -130,9 +130,15 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'You have been logged out.');
     }
 
-    public function userDashboard()
+    public function userDashboard(Request $request)
     {
-        $userId = Auth::id();
+        $user = $request->user();
+
+        if ($user?->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        $userId = $user?->id;
 
         $stats = [
             'totalReports' => 0,

@@ -44,7 +44,6 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'userDashboard'])
-        ->middleware('role:user')
         ->name('dashboard');
 
     Route::middleware('role:user')->group(function () {
@@ -64,11 +63,24 @@ Route::middleware('auth')->group(function () {
         ->name('admin.dashboard');
 
     Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/users', [AdminController::class, 'usersIndex'])->name('admin.users.index');
+        Route::get('/admin/users/{user}', [AdminController::class, 'usersShow'])->name('admin.users.show');
+        Route::get('/admin/reports', [AdminController::class, 'reportsIndex'])->name('admin.reports.index');
+        Route::get('/admin/reports/export/csv', [AdminController::class, 'reportsExportCsv'])->name('admin.reports.export.csv');
+        Route::get('/admin/reports/create/{type?}', [AdminController::class, 'reportsCreate'])->name('admin.reports.create');
+        Route::post('/admin/reports', [AdminController::class, 'reportsStore'])->name('admin.reports.store');
+        Route::get('/admin/reports/{report}', [AdminController::class, 'reportsShow'])->name('admin.reports.show');
+        Route::get('/admin/reports/{report}/edit', [AdminController::class, 'reportsEdit'])->name('admin.reports.edit');
+        Route::put('/admin/reports/{report}', [AdminController::class, 'reportsUpdate'])->name('admin.reports.update');
+        Route::delete('/admin/reports/{report}', [AdminController::class, 'reportsDestroy'])->name('admin.reports.destroy');
+        Route::get('/admin/audit-logs', [AdminController::class, 'auditLogsIndex'])->name('admin.audit-logs.index');
+
         Route::get('/admin/claims', [AdminController::class, 'claimsIndex'])->name('admin.claims.index');
         Route::patch('/admin/claims/{claim}/approve', [AdminController::class, 'approve'])->name('admin.claims.approve');
         Route::patch('/admin/claims/{claim}/reject', [AdminController::class, 'reject'])->name('admin.claims.reject');
         Route::patch('/admin/claims/{claim}/hold', [AdminController::class, 'hold'])->name('admin.claims.hold');
         Route::patch('/admin/users/{user}/block', [AdminController::class, 'blockUser'])->name('admin.users.block');
+        Route::patch('/admin/users/{user}/unblock', [AdminController::class, 'unblockUser'])->name('admin.users.unblock');
         Route::delete('/admin/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
     });
 

@@ -62,6 +62,22 @@
         <!-- Right Side: Details and Claims -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
             
+            <!-- Share Report Section -->
+            <div class="card" style="margin: 0; padding: 24px; background: linear-gradient(180deg, #f0f9ff 0%, white 100%); border-color: #3b82f6;">
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">Help Spread the Word</h3>
+                <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 16px; margin: 0 0 16px;">Share this listing on your social networks to help locate this item faster.</p>
+                <button onclick="openShareModal()" style="background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; transition: background-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    Share Report
+                </button>
+            </div>
+            
             <div class="card" style="margin: 0; padding: 24px;">
                 <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 24px;">Item Details</h3>
                 
@@ -289,4 +305,6 @@
     }
 }
 </style>
+
+@include('partials.share-report')
 @endsection

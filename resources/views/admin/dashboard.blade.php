@@ -138,7 +138,10 @@
         </div>
 
         <div class="actions-row">
+            <a class="btn btn-primary" href="{{ route('admin.users.index') }}">Manage Users</a>
+            <a class="btn btn-primary" href="{{ route('admin.reports.index') }}">Manage Reports (Lost & Found)</a>
             <a class="btn btn-primary" href="{{ route('admin.claims.index') }}">Manage Claims</a>
+            <a class="btn btn-outline" href="{{ route('admin.audit-logs.index') }}">View Audit Logs</a>
             <a class="btn btn-outline" href="{{ route('items.index') }}">Browse Reports</a>
         </div>
     </section>
@@ -192,8 +195,8 @@
                     @foreach ($recentClaims as $claim)
                         <tr>
                             <td>#{{ $claim->id }}</td>
-                            <td>{{ $claim->report_title ?? 'Item removed' }}</td>
-                            <td>{{ $claim->claimant_name ?? 'Unknown' }}</td>
+                            <td>{{ $claim->report?->title ?? 'Item removed' }}</td>
+                            <td>{{ $claim->user?->name ?? 'Unknown' }}</td>
                             <td>
                                 @php
                                     $statusClass = $claim->status;

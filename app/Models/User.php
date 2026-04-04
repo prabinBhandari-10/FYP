@@ -60,4 +60,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Claim::class);
     }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'admin_user_id');
+    }
 }

@@ -343,7 +343,13 @@
             <a href="{{ route('items.index') }}" class="btn btn-ghost">Browse</a>
             
             @auth
-                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                @if (auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Dashboard</a>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">Manage Users</a>
+                    <a href="{{ route('admin.reports.index') }}" class="btn btn-ghost">Manage Lost &amp; Found</a>
+                @else
+                    <a href="{{ route('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                @endif
 
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
                     @csrf

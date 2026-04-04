@@ -589,17 +589,22 @@
     </style>
 </head>
 <body>
+    @php
+        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+    @endphp
     <main class="shell">
         <header class="topbar">
             <a class="brand" href="{{ route('home') }}"><strong>fyp.</strong> lost &amp; found</a>
 
             <nav class="nav" aria-label="Main navigation">
                 <a class="is-active" href="{{ route('home') }}">Home</a>
-                <a href="{{ route('reports.lost.create') }}">Report Lost</a>
-                <a href="{{ route('reports.found.create') }}">Report Found</a>
+                @unless($isAdmin)
+                    <a href="{{ route('reports.lost.create') }}">Report Lost</a>
+                    <a href="{{ route('reports.found.create') }}">Report Found</a>
+                @endunless
                 <a href="{{ route('items.index') }}">Browse</a>
                 @auth
-                    <a href="{{ route('dashboard') }}">Dashboard</a>
+                    <a href="{{ $isAdmin ? route('admin.dashboard') : route('dashboard') }}">{{ $isAdmin ? 'Admin Dashboard' : 'Dashboard' }}</a>
                 @endauth
             </nav>
 
@@ -622,39 +627,76 @@
 
         <section class="content">
             <section class="hero">
-                <h1>Lost something? Found something?</h1>
-                <p>Report it fast and reconnect with the right owner.</p>
+                @if ($isAdmin)
+                    <h1>Admin control center</h1>
+                    <p>Review reports, manage claims, and keep the platform safe and organized.</p>
+                @else
+                    <h1>Lost something? Found something?</h1>
+                    <p>Report it fast and reconnect with the right owner.</p>
+                @endif
                 <div class="hero-buttons">
-                    <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">Report Lost</a>
-                    <a href="{{ route('reports.found.create') }}" class="btn btn-found">Report Found</a>
-                    <a href="{{ route('items.index') }}" class="btn btn-soft">Browse Items</a>
+                    @if ($isAdmin)
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary">Open Admin Dashboard</a>
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-found">Manage Users</a>
+                        <a href="{{ route('admin.claims.index') }}" class="btn btn-soft">Review Claims</a>
+                    @else
+                        <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">Report Lost</a>
+                        <a href="{{ route('reports.found.create') }}" class="btn btn-found">Report Found</a>
+                        <a href="{{ route('items.index') }}" class="btn btn-soft">Browse Items</a>
+                    @endif
                 </div>
             </section>
 
             <section class="panel">
-                <div class="section-head">
-                    <h2>Quick Actions</h2>
-                </div>
+                @if ($isAdmin)
+                    <div class="section-head">
+                        <h2>Admin Actions</h2>
+                    </div>
 
-                <div class="quick-grid">
-                    <article class="quick-card lost">
-                        <h3>Report Lost</h3>
-                        <p>Submit details of your missing item and where you last used it.</p>
-                        <a class="chip" href="{{ route('reports.lost.create') }}">Create Lost Report</a>
-                    </article>
+                    <div class="quick-grid">
+                        <article class="quick-card lost">
+                            <h3>Manage Users</h3>
+                            <p>Block, unblock, and review account activity across the platform.</p>
+                            <a class="chip" href="{{ route('admin.users.index') }}">Open Users</a>
+                        </article>
 
-                    <article class="quick-card found">
-                        <h3>Report Found</h3>
-                        <p>Share what you discovered so the rightful owner can claim it.</p>
-                        <a class="chip" href="{{ route('reports.found.create') }}">Create Found Report</a>
-                    </article>
+                        <article class="quick-card found">
+                            <h3>Review Claims</h3>
+                            <p>Check pending, approved, and on-hold claims from one place.</p>
+                            <a class="chip" href="{{ route('admin.claims.index') }}">Open Claims</a>
+                        </article>
 
-                    <article class="quick-card claim">
-                        <h3>Claim Item</h3>
-                        <p>Use matching details and proof of ownership to reclaim your item.</p>
-                        <a class="chip" href="{{ route('items.index') }}">Start Claim</a>
-                    </article>
-                </div>
+                        <article class="quick-card claim">
+                            <h3>Audit Logs</h3>
+                            <p>Inspect admin actions and verify changes made to reports and users.</p>
+                            <a class="chip" href="{{ route('admin.audit-logs.index') }}">View Logs</a>
+                        </article>
+                    </div>
+                @else
+                    <div class="section-head">
+                        <h2>Quick Actions</h2>
+                    </div>
+
+                    <div class="quick-grid">
+                        <article class="quick-card lost">
+                            <h3>Report Lost</h3>
+                            <p>Submit details of your missing item and where you last used it.</p>
+                            <a class="chip" href="{{ route('reports.lost.create') }}">Create Lost Report</a>
+                        </article>
+
+                        <article class="quick-card found">
+                            <h3>Report Found</h3>
+                            <p>Share what you discovered so the rightful owner can claim it.</p>
+                            <a class="chip" href="{{ route('reports.found.create') }}">Create Found Report</a>
+                        </article>
+
+                        <article class="quick-card claim">
+                            <h3>Claim Item</h3>
+                            <p>Use matching details and proof of ownership to reclaim your item.</p>
+                            <a class="chip" href="{{ route('items.index') }}">Start Claim</a>
+                        </article>
+                    </div>
+                @endif
             </section>
 
             <section class="panel">
