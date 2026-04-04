@@ -118,7 +118,8 @@
                 </div>
             </div>
 
-            <!-- Claim Section -->
+            <!-- Claim Section - Only for Found Items -->
+            @if($report->type === 'found')
             <div class="card" style="margin: 0; padding: 24px; border-color: var(--primary); background: linear-gradient(180deg, #f8fafc 0%, white 100%);">
                 <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">Claim Request</h3>
                 
@@ -186,6 +187,74 @@
                     </div>
                 @endauth
             </div>
+            @endif
+
+            <!-- Sighting Report Section - Only for Lost Items -->
+            @if($report->type === 'lost')
+            <div class="card" style="margin: 0; padding: 24px; border-color: #3b82f6; background: linear-gradient(180deg, #f0f9ff 0%, white 100%);">
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">Report Sighting</h3>
+                <p style="font-size: 14px; color: var(--text-gray); margin-bottom: 16px;">Have you seen this item? Send a short message to help locate it.</p>
+                
+                <form method="POST" action="{{ route('sightings.store', $report) }}">
+                    @csrf
+                    <div class="form-group">
+                        <label class="form-label" for="sighting_message">Your Message</label>
+                        <textarea class="form-textarea" id="sighting_message" name="message" placeholder="Tell us where you saw this item or any helpful details..." style="min-height: 70px;" required>{{ old('message') }}</textarea>
+                        @error('message')
+                            <div style="color: var(--danger); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="sighting_location">Location (optional)</label>
+                        <input class="form-input" type="text" id="sighting_location" name="location" placeholder="Where did you see it?" value="{{ old('location') }}">
+                        @error('location')
+                            <div style="color: var(--danger); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    @guest
+                    <div class="form-group">
+                        <label class="form-label" for="sighting_name">Your Name</label>
+                        <input class="form-input" type="text" id="sighting_name" name="reporter_name" placeholder="Your name" value="{{ old('reporter_name') }}" required>
+                        @error('reporter_name')
+                            <div style="color: var(--danger); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="sighting_email">Your Email</label>
+                        <input class="form-input" type="email" id="sighting_email" name="reporter_email" placeholder="your@email.com" value="{{ old('reporter_email') }}" required>
+                        @error('reporter_email')
+                            <div style="color: var(--danger); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    @endguest
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Send Sighting Report</button>
+                </form>
+            </div>
+
+            <!-- Display Recent Sightings -->
+            @if($report->sightings->count() > 0)
+            <div class="card" style="margin: 0; padding: 24px; background: #fafbff; border-color: #e0e7ff;">
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">Recent Sightings ({{ $report->sightings->count() }})</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    @foreach($report->sightings->latest()->take(5) as $sighting)
+                    <div style="border-left: 3px solid #3b82f6; padding-left: 12px; padding-top: 8px; padding-bottom: 8px;">
+                        <p style="margin: 0 0 4px; color: var(--text-dark); font-weight: 600; font-size: 14px;">{{ $sighting->user?->name ?? $sighting->reporter_name }}</p>
+                        @if($sighting->location)
+                        <p style="margin: 0 0 6px; color: var(--text-gray); font-size: 13px;">📍 {{ $sighting->location }}</p>
+                        @endif
+                        <p style="margin: 0 0 6px; color: var(--text-gray); font-size: 14px; line-height: 1.4;">{{ $sighting->message }}</p>
+                        <p style="margin: 0; color: #9ca3af; font-size: 12px;">{{ $sighting->created_at->diffForHumans() }}</p>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+            @endif
             
         </div>
         

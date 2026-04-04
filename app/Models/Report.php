@@ -39,4 +39,9 @@ class Report extends Model
     {
         return $this->hasMany(Claim::class, 'item_id');
     }
+
+    public function sightings(): HasMany
+    {
+        return $this->hasMany(Sighting::class);
+    }
 }

@@ -3,25 +3,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>fyp. lost & found</title>
+    <title>fyp. lost &amp; found</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #635bff;
-            --primary-hover: #534be0;
-            --text-dark: #1e293b;
-            --text-gray: #64748b;
-            --bg-color: #f8fafc;
-            --border-color: #e2e8f0;
-            --found-color: #10b981;
-            --found-bg: #d1fae5;
-            --lost-color: #ef4444;
-            --lost-bg: #fee2e2;
-            --highlight: #3b82f6;
+            --brand: #4f64ff;
+            --brand-deep: #3f4ee2;
+            --text-main: #1f2a44;
+            --text-subtle: #65708b;
+            --page-bg: #f3f7ff;
+            --line: #d9e5fb;
+            --surface: #ffffff;
         }
 
         * {
@@ -31,37 +27,112 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
-            color: var(--text-dark);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at top right, #e8efff 0%, transparent 44%),
+                linear-gradient(180deg, #ffffff 0%, var(--page-bg) 100%);
+            padding: 26px 18px 42px;
         }
 
-        /* Header */
-        .header {
+        .shell {
+            width: min(1120px, 100%);
+            margin: 0 auto;
+            border-radius: 26px;
+            border: 1px solid #d9e3f7;
+            box-shadow: 0 22px 54px rgba(31, 42, 68, 0.12);
+            background: linear-gradient(180deg, #fdfefe 0%, #f4f8ff 100%);
+            overflow: hidden;
+        }
+
+        .topbar {
+            padding: 16px 28px;
+            border-bottom: 1px solid #e1e9fa;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            padding: 24px 60px;
+            gap: 18px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(6px);
         }
 
-        .logo {
-            font-size: 24px;
-            color: var(--text-dark);
+        .brand {
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            color: var(--text-main);
+            font-size: 23px;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
-        .logo-bold {
+        .brand strong {
+            color: #223355;
             font-weight: 800;
         }
 
-        .logo-regular {
-            font-weight: 500;
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            text-decoration: none;
+            font-size: 14px;
+            color: #516283;
+            font-weight: 600;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav a:hover,
+        .nav a.is-active {
+            color: #263a63;
+        }
+
+        .nav a.is-active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -8px;
+            height: 2px;
+            border-radius: 999px;
+            background: var(--brand);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .avatar-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #53617d;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: #fff;
+        }
+
+        .avatar-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-grid;
+            place-items: center;
+            color: #fff;
+            background: linear-gradient(145deg, var(--mint), var(--accent));
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .btn {
@@ -69,410 +140,606 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 12px 24px;
-            border-radius: 9999px; /* Pill shape */
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 600;
-            font-size: 15px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            border-radius: 999px;
             border: none;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 11px 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            cursor: pointer;
         }
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
+        .btn:hover {
             transform: translateY(-1px);
         }
 
-        .btn-outline {
-            background-color: white;
-            color: var(--text-dark);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        .btn-primary {
+            color: #fff;
+            background: linear-gradient(120deg, var(--brand) 0%, #6578ff 100%);
+            box-shadow: 0 8px 20px rgba(79, 100, 255, 0.28);
         }
 
-        .btn-outline:hover {
-            border-color: #cbd5e1;
-            background-color: #f8fafc;
+        .btn-primary:hover {
+            box-shadow: 0 10px 22px rgba(79, 100, 255, 0.34);
         }
 
-        /* Main Hero */
-        .hero-wrap {
-            flex: 1;
-            padding: 60px 20px 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .btn-found {
+            color: #fff;
+            background: linear-gradient(120deg, #4f64ff 0%, #6c84ff 100%);
+            box-shadow: 0 8px 20px rgba(79, 100, 255, 0.24);
+        }
+
+        .btn-soft {
+            color: #314567;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .btn-soft:hover {
+            background: #f4f8ff;
+        }
+
+        .content {
+            padding: 44px 28px 30px;
+        }
+
+        .hero {
             text-align: center;
-            position: relative;
-        }
-
-        .hero-title {
-            font-size: 56px;
-            font-weight: 800;
-            line-height: 1.15;
-            color: var(--text-dark);
-            margin-bottom: 24px;
-            letter-spacing: -1px;
-        }
-
-        .hero-title-highlight {
-            color: #4da6ff;
-        }
-
-        .hero-subtitle {
-            font-family: 'Inter', sans-serif;
-            font-size: 18px;
-            color: var(--text-gray);
-            line-height: 1.5;
-            margin-bottom: 40px;
-            max-width: 600px;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
             margin-bottom: 30px;
         }
 
-        .hero-actions .btn {
-            font-size: 16px;
-            padding: 14px 32px;
+        .hero h1 {
+            font-size: clamp(29px, 4vw, 46px);
+            font-weight: 800;
+            letter-spacing: -0.7px;
+            margin-bottom: 10px;
         }
 
-        .helper-text {
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            color: var(--text-gray);
-            margin-bottom: 48px;
+        .hero p {
+            font-family: 'Manrope', sans-serif;
+            color: var(--text-subtle);
+            font-size: 18px;
+            margin-bottom: 22px;
         }
 
-        /* Recent Reports Card */
-        .reports-container {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            padding: 30px;
-            width: 100%;
-            max-width: 900px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            text-align: left;
-            z-index: 10;
-        }
-
-        .reports-header {
+        .hero-buttons {
             display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 8px 22px rgba(58, 78, 109, 0.07);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 14px;
         }
 
-        .reports-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-dark);
+        .section-head h2 {
+            font-size: 25px;
+            letter-spacing: -0.3px;
         }
 
-        .browse-link {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--primary);
+        .section-head a {
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            font-size: 13px;
+            color: #566aa0;
+            font-weight: 700;
         }
 
-        .browse-link:hover {
+        .section-head a:hover {
+            color: #30467f;
             text-decoration: underline;
         }
 
-        .reports-grid {
+        .quick-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
         }
 
-        .report-card {
-            background-color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 20px;
+        .quick-card {
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid #d6e4ff;
+            background: linear-gradient(170deg, #f7faff 0%, #eef4ff 100%);
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
-            transition: all 0.2s;
-        }
-        
-        .report-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            background-color: white;
+            flex-direction: column;
+            min-height: 172px;
         }
 
-        .report-img {
-            width: 72px;
-            height: 96px;
-            background-color: transparent;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            flex-shrink: 0;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
-            object-fit: contain;
+        .quick-card h3 {
+            font-size: 19px;
+            margin-bottom: 6px;
         }
 
-        .report-details {
+        .quick-card p {
+            font-family: 'Manrope', sans-serif;
+            color: #667592;
+            line-height: 1.45;
+            font-size: 14px;
+            margin-bottom: 12px;
             flex: 1;
         }
 
-        .report-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 4px;
+        .quick-card .chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 9px 14px;
+            width: fit-content;
         }
 
-        .report-title {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text-dark);
+        .quick-card.lost .chip {
+            background: linear-gradient(120deg, #4f64ff 0%, #6d82ff 100%);
         }
 
-        .badge {
-            font-family: 'Inter', sans-serif;
+        .quick-card.found {
+            background: linear-gradient(170deg, #f6f9ff 0%, #ebf2ff 100%);
+            border-color: #d6e3ff;
+        }
+
+        .quick-card.found .chip {
+            background: linear-gradient(120deg, #3b82f6 0%, #4f9cff 100%);
+        }
+
+        .quick-card.claim {
+            background: linear-gradient(170deg, #f7faff 0%, #edf3ff 100%);
+            border-color: #dbe7ff;
+        }
+
+        .quick-card.claim .chip {
+            background: linear-gradient(120deg, #5d73ff 0%, #7b8fff 100%);
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 1.4fr repeat(2, minmax(0, 0.8fr)) auto;
+            gap: 10px;
+        }
+
+        .search-field,
+        .search-select {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            height: 44px;
+            padding: 0 14px;
+            background: #fff;
+            color: #495a79;
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .search-button {
+            border: 0;
+            border-radius: 999px;
+            color: #fff;
+            padding: 0 20px;
+            font-weight: 700;
+            background: linear-gradient(120deg, var(--brand) 0%, #6a7cff 100%);
+            box-shadow: 0 8px 20px rgba(79, 100, 255, 0.25);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .item-card {
+            border: 1px solid #dce7fb;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 5px 14px rgba(43, 63, 99, 0.06);
+        }
+
+        .item-preview {
+            height: 116px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .item-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
             font-size: 11px;
             font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            color: #fff;
+            background: #ea4343;
         }
 
-        .badge-found {
-            background-color: var(--found-bg);
-            color: var(--found-color);
+        .item-badge.found {
+            background: #3b82f6;
         }
 
-        .badge-lost {
-            background-color: var(--lost-bg);
-            color: var(--lost-color);
+        .item-body {
+            padding: 12px;
         }
 
-        .report-category {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            color: var(--text-gray);
-            margin-bottom: 12px;
+        .item-body h3 {
+            font-size: 20px;
+            margin-bottom: 6px;
         }
 
-        .report-meta {
-            font-family: 'Inter', sans-serif;
+        .item-meta {
+            font-family: 'Manrope', sans-serif;
+            color: #6d7a94;
             font-size: 13px;
-            color: var(--text-gray);
+            line-height: 1.5;
         }
 
-        /* Decorative Background */
-        .bg-illustration {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 300px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23f0f6ff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,197.3C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') bottom center / cover no-repeat;
-            opacity: 0.5;
-            z-index: 1;
-            pointer-events: none;
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
         }
 
-        @media (max-width: 768px) {
-            .header { padding: 20px; }
-            .hero-title { font-size: 40px; }
-            .reports-grid { grid-template-columns: 1fr; }
-            .header .btn { display: none; }
-            .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
+        .step {
+            border: 1px solid #dce7fc;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
+            padding: 15px;
+        }
+
+        .step-num {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            display: inline-grid;
+            place-items: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(120deg, #7ea2ff 0%, #5c7dff 100%);
+        }
+
+        .step:nth-child(2) .step-num {
+            background: linear-gradient(120deg, #8c91ff 0%, #6f75f2 100%);
+        }
+
+        .step:nth-child(3) .step-num {
+            background: linear-gradient(120deg, #6ed0c2 0%, #43b6c7 100%);
+        }
+
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .step p {
+            font-family: 'Manrope', sans-serif;
+            color: #6f7c95;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .site-end {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #7080a0;
+            text-align: center;
         }
 
         .site-footer-quick {
-            margin-top: 44px;
-            width: min(980px, 100%);
-            border-top: 1px solid #d9e3f0;
-            background: rgba(241, 245, 249, 0.92);
-            border-radius: 18px;
-            padding: 26px 20px 14px;
-            z-index: 10;
+            margin-top: 20px;
+            border-top: 1px solid #dbe6fb;
+            border-radius: 14px;
+            background: #f5f9ff;
+            padding: 22px 18px 12px;
         }
 
         .site-footer-inner {
             display: grid;
-            grid-template-columns: minmax(240px, 1.2fr) minmax(0, 1.8fr);
-            gap: 22px;
+            grid-template-columns: minmax(220px, 1.2fr) minmax(0, 1.8fr);
+            gap: 20px;
         }
 
         .site-footer-brand h3 {
-            margin: 0 0 10px;
-            font-size: 44px;
+            margin: 0 0 8px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: -0.8px;
-            text-transform: uppercase;
-            color: #0f172a;
             line-height: 1;
+            color: var(--text-main);
+            text-transform: uppercase;
         }
 
         .site-footer-brand p {
             margin: 0;
-            color: var(--text-gray);
-            font-family: 'Inter', sans-serif;
-            font-size: 17px;
-            line-height: 1.55;
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #60708f;
         }
 
         .site-footer-links-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(130px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 16px;
         }
 
         .site-footer-col h4 {
-            margin: 0 0 10px;
+            margin: 0 0 8px;
             font-size: 14px;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--text-main);
         }
 
         .site-footer-col a {
             display: block;
-            margin-bottom: 9px;
-            color: #475569;
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            margin-bottom: 7px;
+            color: #5a6d92;
+            font-size: 14px;
+            font-weight: 600;
             text-decoration: none;
         }
 
         .site-footer-col a:hover {
-            color: var(--primary);
+            color: var(--brand);
             text-decoration: underline;
         }
 
         .site-footer-bottom {
-            margin-top: 18px;
-            padding-top: 12px;
-            border-top: 1px solid #d4deeb;
-            font-family: 'Inter', sans-serif;
-            color: #52637d;
-            font-size: 15px;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #dbe6fb;
+            color: #667aa1;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1040px) {
+            .items-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .search-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .search-button {
+                height: 44px;
+            }
         }
 
         @media (max-width: 860px) {
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
             .site-footer-inner {
                 grid-template-columns: 1fr;
             }
 
             .site-footer-links-grid {
-                grid-template-columns: repeat(2, minmax(130px, 1fr));
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
+
+            .quick-grid,
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 30px 18px 22px;
+            }
+
+            .section-head h2 {
+                font-size: 22px;
+            }
+
+            .nav {
+                gap: 12px;
             }
         }
 
-        @media (max-width: 520px) {
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .shell {
+                border-radius: 14px;
+            }
+
+            .items-grid,
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+
             .site-footer-links-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 14px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .topbar-right {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
     </style>
 </head>
 <body>
+    <main class="shell">
+        <header class="topbar">
+            <a class="brand" href="{{ route('home') }}"><strong>fyp.</strong> lost &amp; found</a>
 
-    <header class="header">
-        <a href="{{ route('dashboard') }}" class="logo">
-            <span class="logo-bold">fyp.</span>
-            <span class="logo-regular">lost & found</span>
-        </a>
+            <nav class="nav" aria-label="Main navigation">
+                <a class="is-active" href="{{ route('home') }}">Home</a>
+                <a href="{{ route('reports.lost.create') }}">Report Lost</a>
+                <a href="{{ route('reports.found.create') }}">Report Found</a>
+                <a href="{{ route('items.index') }}">Browse</a>
+                @auth
+                    <a href="{{ route('dashboard') }}">Dashboard</a>
+                @endauth
+            </nav>
 
-        <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">
-            + Report a lost item
-        </a>
-    </header>
-
-    <div class="hero-wrap">
-        <div class="bg-illustration"></div>
-        
-        <h1 class="hero-title">
-            Lost something? <span class="hero-title-highlight">Found it?</span><br>
-            Let's make it right.
-        </h1>
-
-        <p class="hero-subtitle">
-            Report, reconnect, and reunite lost belongings with their<br>rightful owners.
-        </p>
-
-        <div class="hero-actions">
-            <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">
-                + Report a lost item
-            </a>
-
-            <a href="{{ route('items.index') }}" class="btn btn-outline">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Browse items
-            </a>
-        </div>
-
-        <p class="helper-text">
-            Check recent reports or report something lost or found belclow.
-        </p>
-
-        <div class="reports-container">
-            <div class="reports-header">
-                <h2 class="reports-title">Recent reports</h2>
-                <a href="{{ route('items.index') }}" class="browse-link">
-                    Browse all items →
-                </a>
+            <div class="topbar-right">
+                @auth
+                    <span class="avatar-pill">
+                        <span class="avatar-dot">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        {{ auth()->user()->name }}
+                    </span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-soft">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-soft">Login</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary">Create account</a>
+                @endauth
             </div>
+        </header>
 
-            <div class="reports-grid">
-                <!-- Report Card 1 -->
-                <div class="report-card">
-                    <div class="report-img bg-blue-50">📱</div>
-                    <div class="report-details">
-                        <div class="report-title-row">
-                            <h3 class="report-title">Smartphone</h3>
-                            <span class="badge badge-found">FOUND</span>
-                        </div>
-                        <div class="report-category">Electronics</div>
-                        <div class="report-meta">1 hour ago - Dudley Commons</div>
-                    </div>
+        <section class="content">
+            <section class="hero">
+                <h1>Lost something? Found something?</h1>
+                <p>Report it fast and reconnect with the right owner.</p>
+                <div class="hero-buttons">
+                    <a href="{{ route('reports.lost.create') }}" class="btn btn-primary">Report Lost</a>
+                    <a href="{{ route('reports.found.create') }}" class="btn btn-found">Report Found</a>
+                    <a href="{{ route('items.index') }}" class="btn btn-soft">Browse Items</a>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="section-head">
+                    <h2>Quick Actions</h2>
                 </div>
 
-                <!-- Report Card 2 -->
-                <div class="report-card">
-                    <div class="report-img bg-gray-50">🎒</div>
-                    <div class="report-details">
-                        <div class="report-title-row">
-                            <h3 class="report-title">Black Backpack</h3>
-                            <span class="badge badge-lost">LOST</span>
-                        </div>
-                        <div class="report-category">Bags</div>
-                        <div class="report-meta">2 hours ago - Auburn Library</div>
-                    </div>
+                <div class="quick-grid">
+                    <article class="quick-card lost">
+                        <h3>Report Lost</h3>
+                        <p>Submit details of your missing item and where you last used it.</p>
+                        <a class="chip" href="{{ route('reports.lost.create') }}">Create Lost Report</a>
+                    </article>
+
+                    <article class="quick-card found">
+                        <h3>Report Found</h3>
+                        <p>Share what you discovered so the rightful owner can claim it.</p>
+                        <a class="chip" href="{{ route('reports.found.create') }}">Create Found Report</a>
+                    </article>
+
+                    <article class="quick-card claim">
+                        <h3>Claim Item</h3>
+                        <p>Use matching details and proof of ownership to reclaim your item.</p>
+                        <a class="chip" href="{{ route('items.index') }}">Start Claim</a>
+                    </article>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        @include('partials.site-footer')
-    </div>
+            <section class="panel">
+                <form class="search-row" action="{{ route('items.index') }}" method="GET">
+                    <input class="search-field" type="text" name="q" placeholder="Search items...">
+                    <select class="search-select" name="category">
+                        <option value="">All Categories</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category }}">{{ $category }}</option>
+                        @endforeach
+                    </select>
+                    <select class="search-select" name="type">
+                        <option value="">Lost &amp; Found</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                    </select>
+                    <button class="search-button" type="submit">Search</button>
+                </form>
+            </section>
 
+            <section class="panel">
+                <div class="section-head">
+                    <h2>Recent Items</h2>
+                    <a href="{{ route('items.index') }}">Browse all items →</a>
+                </div>
+
+                <div class="items-grid">
+                    @forelse ($recentReports as $report)
+                        <article class="item-card">
+                            <a href="{{ route('items.show', $report) }}" style="display: block; text-decoration: none; color: inherit;">
+                                @if ($report->image)
+                                    <div class="item-preview" style="background-image: url('{{ asset('storage/' . $report->image) }}');">
+                                @else
+                                    <div class="item-preview" style="background-image: linear-gradient(120deg, #dbe8ff 0%, #c9d7f5 100%);">
+                                @endif
+                                        <span class="item-badge {{ $report->type === 'found' ? 'found' : '' }}">{{ strtoupper($report->type) }}</span>
+                                    </div>
+
+                                <div class="item-body">
+                                    <h3>{{ $report->title }}</h3>
+                                    <p class="item-meta">{{ $report->location }} • {{ $report->created_at->diffForHumans() }}</p>
+                                </div>
+                            </a>
+                        </article>
+                    @empty
+                        <article class="item-card" style="grid-column: 1 / -1;">
+                            <div class="item-body" style="padding: 24px;">
+                                <h3 style="font-size: 18px;">No recent reports yet</h3>
+                                <p class="item-meta">Start by reporting a lost or found item.</p>
+                            </div>
+                        </article>
+                    @endforelse
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="section-head">
+                    <h2>How It Works</h2>
+                </div>
+
+                <div class="steps-grid">
+                    <article class="step">
+                        <span class="step-num">1</span>
+                        <h3>Report Item</h3>
+                        <p>Share your lost or found details with time, place, and identifying clues.</p>
+                    </article>
+
+                    <article class="step">
+                        <span class="step-num">2</span>
+                        <h3>System Matches</h3>
+                        <p>Our matching flow links similar reports and highlights possible owners.</p>
+                    </article>
+
+                    <article class="step">
+                        <span class="step-num">3</span>
+                        <h3>Claim &amp; Verify</h3>
+                        <p>Provide ownership proof and complete a safe handover process.</p>
+                    </article>
+                </div>
+            </section>
+
+            <p class="site-end">&copy; {{ now()->year }} fyp. lost &amp; found.</p>
+
+            @include('partials.site-footer')
+        </section>
+    </main>
 </body>
 </html>

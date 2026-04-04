@@ -169,4 +169,28 @@ class ItemReportController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Item report submitted successfully.');
     }
+
+    public function storeSighting(Request $request, Report $report)
+    {
+        if ($report->type !== 'lost') {
+            abort(403, 'Sightings can only be reported for lost items.');
+        }
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'min:10', 'max:1000'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'reporter_name' => ['nullable', 'string', 'max:255'],
+            'reporter_email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        $report->sightings()->create([
+            'user_id' => $request->user()?->id,
+            'reporter_name' => $validated['reporter_name'] ?? $request->user()?->name,
+            'reporter_email' => $validated['reporter_email'] ?? $request->user()?->email,
+            'message' => $validated['message'],
+            'location' => $validated['location'],
+        ]);
+
+        return back()->with('success', 'Thank you! Your sighting report has been sent to the item owner.');
+    }
 }

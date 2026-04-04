@@ -4,14 +4,30 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\ItemReportController;
+use App\Models\Report;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $recentReports = Report::query()
+        ->orderByDesc('created_at')
+        ->limit(4)
+        ->get();
+
+    $categories = Report::query()
+        ->select('category')
+        ->distinct()
+        ->orderBy('category')
+        ->pluck('category');
+
+    return view('welcome', [
+        'recentReports' => $recentReports,
+        'categories' => $categories,
+    ]);
 })->name('home');
 
 Route::get('/items', [ItemReportController::class, 'index'])->name('items.index');
 Route::get('/items/{report}', [ItemReportController::class, 'show'])->name('items.show');
+Route::post('/items/{report}/sightings', [ItemReportController::class, 'storeSighting'])->name('sightings.store');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
