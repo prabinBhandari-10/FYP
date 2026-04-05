@@ -3,31 +3,18 @@
 @section('title', 'Register | Lost & Found')
 
 @section('content')
-<div style="min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-    
-    <div class="card" style="width: 100%; max-width: 440px; padding: 40px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.03);">
-        
-        <div style="text-align: center; margin-bottom: 32px;">
-            <div style="display: inline-flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-                <div style="width: 40px; height: 40px; border-radius: 12px; background-color: var(--primary); display: grid; place-items: center; color: white;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-                        <path d="M2 12h20"></path>
-                    </svg>
-                </div>
-            </div>
-            <h1 style="font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 0 0 8px 0; letter-spacing: -0.02em;">Create an account</h1>
-            <p style="font-size: 15px; color: var(--text-gray); margin: 0;">Join to report or claim lost items.</p>
-        </div>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1 style="font-size: 32px; margin-bottom: 6px;">Create Account</h1>
+        <p class="page-subtitle" style="margin-bottom: 20px;">Join the platform to report and claim items securely.</p>
 
         @if (session('success'))
-            <div class="alert alert-success" style="margin-bottom: 24px;">{{ session('success') }}</div>
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-error" style="margin-bottom: 24px;">
-                <ul style="margin: 0; padding-left: 20px;">
+            <div class="alert alert-error">
+                <ul style="padding-left: 18px;">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -35,50 +22,36 @@
             </div>
         @endif
 
-        <form action="{{ route('register.store') }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        <form action="{{ route('register.store') }}" method="POST">
             @csrf
 
             <div class="form-group">
-                <label class="form-label" for="name">Full name</label>
-                <input class="form-input" type="text" id="name" name="name" value="{{ old('name') }}" placeholder="John Doe" required autofocus>
+                <label class="form-label" for="name">Full Name</label>
+                <input class="form-input" type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Your full name" required autofocus>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="email">Email address</label>
-                <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="name@example.com" required>
-                <div style="margin-top: 6px; font-size: 13px; color: var(--text-gray);">Each email address can be used for one account only.</div>
+                <label class="form-label" for="email">Email Address</label>
+                <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input class="form-input" type="password" id="password" name="password" placeholder="••••••••" required>
+                <input class="form-input" type="password" id="password" name="password" placeholder="Create a password" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password_confirmation">Confirm password</label>
-                <input class="form-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="••••••••" required>
+                <label class="form-label" for="password_confirmation">Confirm Password</label>
+                <input class="form-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="Repeat your password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 8px;">Create account</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
         </form>
 
-        <div style="text-align: center; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-            <p style="font-size: 14px; color: var(--text-gray); margin: 0;">
-                Already have an account? 
-                <a href="{{ route('login') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign in here</a>
-            </p>
-        </div>
+        <p style="margin-top: 18px; color: var(--text-muted); font-size: 14px; text-align: center;">
+            Already have an account?
+            <a href="{{ route('login') }}" style="color: var(--primary); text-decoration: none; font-weight: 700;">Sign in here</a>
+        </p>
     </div>
-    
-    <div style="margin-top: 32px;">
-        <a href="{{ url('/') }}" style="color: var(--text-gray); font-size: 14px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Back to home
-        </a>
-    </div>
-
 </div>
 @endsection

@@ -35,6 +35,12 @@ class ClaimController extends Controller
 
     public function store(Request $request, Report $report)
     {
+        if ($report->status !== 'open') {
+            return back()->withErrors([
+                'claim' => 'This report is not publicly available for claims yet.',
+            ]);
+        }
+
         $existingClaim = Claim::query()
             ->where('user_id', $request->user()->id)
             ->where('item_id', $report->id)

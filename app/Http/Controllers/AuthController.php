@@ -36,7 +36,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Welcome! Your account has been created.');
+        return redirect()->route('profile')->with('success', 'Welcome! Your account has been created.');
     }
 
     public function showLoginForm()
@@ -117,7 +117,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect()->intended($this->redirectPathForRole($request->user()));
+        return redirect()->route('home')->with('success', 'Login successful.');
     }
 
     public function logout(Request $request)
@@ -171,7 +171,7 @@ class AuthController extends Controller
             $stats['activeClaims'] = $claimsQuery->count();
         }
 
-        return view('dashboard', compact('stats'));
+        return view('user.profile', compact('stats'));
     }
 
     public function adminDashboard()
@@ -227,6 +227,6 @@ class AuthController extends Controller
     {
         return $user->role === 'admin'
             ? route('admin.dashboard')
-            : route('dashboard');
+            : route('profile');
     }
 }

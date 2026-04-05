@@ -15,8 +15,17 @@ class EnsureUserHasRole
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== $role) {
-            abort(403);
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        // Admin can access user-level routes, but users cannot access admin routes.
+        if ($user->role !== $role && ! ($user->role === 'admin' && $role === 'user')) {
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+
+            return redirect()->route('profile');
         }
 
         return $next($request);

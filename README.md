@@ -57,3 +57,18 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Run Admin and User at the Same Time
+
+You can use admin and user accounts at once during testing.
+
+1. Start the server:
+	- `php artisan serve --host=127.0.0.1 --port=8000`
+2. Open admin in one browser and login:
+	- `http://127.0.0.1:8000/login`
+3. Open user in another browser and login:
+	- `http://localhost:8000/login`
+
+Why this works:
+- Different browsers keep separate sessions.
+- Also, `127.0.0.1` and `localhost` are treated as different hosts for cookies, so sessions do not overwrite each other.

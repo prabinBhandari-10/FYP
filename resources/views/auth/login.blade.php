@@ -1,437 +1,55 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Lost & Found</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #4338ca;
-            --primary-hover: #3730a3;
-            --secondary: #0ea5e9;
-            --text-dark: #0f172a;
-            --text-gray: #475569;
-            --text-light: #94a3b8;
-            --bg-color: #f8fafc;
-            --border-color: #e2e8f0;
-            --input-bg: #ffffff;
-        }
+@extends('layouts.app')
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+@section('title', 'Login | Lost & Found')
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            position: relative;
-        }
-        
-        .back-nav {
-            position: absolute;
-            top: 24px;
-            left: 24px;
-        }
+@section('content')
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1 style="font-size: 32px; margin-bottom: 6px;">Welcome</h1>
+        <p class="page-subtitle" style="margin-bottom: 20px;">Sign in to manage reports, claims, and updates.</p>
 
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-gray);
-            text-decoration: none;
-            font-size: 14.5px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
-        .back-link:hover {
-            color: var(--text-dark);
-        }
+        @if ($errors->any())
+            <div class="alert alert-error">
+                <ul style="padding-left: 18px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        .auth-container {
-            width: 100%;
-            max-width: 440px;
-        }
+        <form action="{{ route('login.attempt') }}" method="POST">
+            @csrf
 
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            margin-bottom: 32px;
-            text-decoration: none;
-        }
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required autofocus>
+            </div>
 
-        .logo {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            color: var(--text-dark);
-            text-transform: uppercase;
-        }
-        
-        .logo-arch {
-            position: relative;
-        }
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-input" type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
 
-        .logo-subtitle {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-gray);
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            padding-left: 28px;
-        }
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted);">
+                    <input type="checkbox" id="remember" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                    Remember me
+                </label>
+                <a href="{{ route('password.request') }}" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 14px;">Forgot password?</a>
+            </div>
 
-        .card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 40px 36px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            width: 100%;
-        }
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        </form>
 
-        .card-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .card-title {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 6px;
-            letter-spacing: -0.5px;
-        }
-
-        .card-subtitle {
-            font-size: 14.5px;
-            color: var(--text-gray);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            color: var(--text-dark);
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: var(--text-light);
-        }
-
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            color: var(--text-gray);
-            font-weight: 500;
-        }
-
-        .checkbox-container input {
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-            accent-color: var(--primary);
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
-        .btn {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            padding: 12px 24px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .alert-success {
-            background-color: #f0fdf4;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert-error {
-            background-color: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-error ul {
-            margin-left: 20px;
-            margin-top: 4px;
-        }
-
-        .card-footer {
-            margin-top: 32px;
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-gray);
-        }
-
-        .card-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .card-footer a:hover {
-            text-decoration: underline;
-        }
-
-        .site-footer-quick {
-            width: min(980px, 100%);
-            margin-top: 16px;
-            border-top: 1px solid var(--border-color);
-            border-radius: 14px;
-            background: #f1f5f9;
-            padding: 20px 16px 12px;
-        }
-
-        .site-footer-inner {
-            display: grid;
-            grid-template-columns: minmax(220px, 1.2fr) minmax(0, 1.8fr);
-            gap: 20px;
-        }
-
-        .site-footer-brand h3 {
-            margin: 0 0 8px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 26px;
-            line-height: 1;
-            text-transform: uppercase;
-            color: var(--text-dark);
-        }
-
-        .site-footer-brand p {
-            margin: 0;
-            font-size: 14px;
-            color: var(--text-gray);
-            line-height: 1.5;
-        }
-
-        .site-footer-links-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(120px, 1fr));
-            gap: 16px;
-        }
-
-        .site-footer-col h4 {
-            margin: 0 0 8px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .site-footer-col a {
-            display: block;
-            margin-bottom: 7px;
-            text-decoration: none;
-            color: var(--text-gray);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .site-footer-col a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
-
-        .site-footer-bottom {
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid #d6deea;
-            color: var(--text-gray);
-            font-size: 13px;
-        }
-
-        @media (max-width: 760px) {
-            .site-footer-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .site-footer-links-grid {
-                grid-template-columns: repeat(2, minmax(120px, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-            .site-footer-links-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .card {
-                padding: 32px 24px;
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                background: transparent;
-            }
-            body {
-                background-color: white;
-            }
-            .back-nav {
-                position: relative;
-                top: auto;
-                left: auto;
-                width: 100%;
-                max-width: 440px;
-                margin-bottom: 24px;
-                padding: 0 12px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="back-nav">
-        <a href="{{ route('home') }}" class="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Back to Home
-        </a>
+        <p style="margin-top: 18px; color: var(--text-muted); font-size: 14px; text-align: center;">
+            New here?
+            <a href="{{ route('register') }}" style="color: var(--primary); text-decoration: none; font-weight: 700;">Create an account</a>
+        </p>
     </div>
-
-    <div class="auth-container">
-        <a href="{{ route('home') }}" class="logo-container">
-            <div class="logo">
-                L
-                <svg class="logo-arch" width="14" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 22A8 8 0 0 1 20 22" />
-                </svg>
-                ST &amp; FOUND
-            </div>
-        </a>
-
-        <div class="card">
-            <div class="card-header">
-                <h1 class="card-title">Welcome back</h1>
-                <p class="card-subtitle">Login to continue to your dashboard.</p>
-            </div>
-
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('login.attempt') }}" method="POST">      
-                @csrf
-
-                <div class="form-group">
-                    <label class="form-label" for="email">Email address</label>
-                    <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email address" required autofocus>  
-                    <div style="margin-top: 6px; font-size: 13px; color: var(--text-gray);">Use your Gmail or registered email address. One email can be used for one account.</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-input" type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-container" for="remember">
-                        <input type="checkbox" id="remember" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-                        Remember me
-                    </label>
-                    <a href="{{ route('password.request') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Forgot password?</a>
-                </div>
-
-                <button type="submit" class="btn">Sign In</button> 
-            </form>
-
-            <div class="card-footer">
-                New here? <a href="{{ route('register') }}">Create an account</a>
-            </div>
-        </div>
-    </div>
-
-    @include('partials.site-footer')
-
-</body>
-</html>
+</div>
+@endsection

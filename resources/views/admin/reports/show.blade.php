@@ -10,6 +10,18 @@
             <p style="font-size: 14px; color: var(--text-gray);">Full details submitted by user/reporter.</p>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            @if ($report->status === 'pending')
+                <form method="POST" action="{{ route('admin.reports.approve', $report) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="btn" style="color: #166534; border-color: #bbf7d0; background: #f0fdf4;">Approve</button>
+                </form>
+                <form method="POST" action="{{ route('admin.reports.reject', $report) }}" onsubmit="return confirm('Reject this report and keep it hidden?');">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="btn" style="color: #b91c1c; border-color: #fecaca; background: #fef2f2;">Reject</button>
+                </form>
+            @endif
             <a href="{{ route('admin.reports.index') }}" class="btn btn-outline">Back</a>
             <a href="{{ route('admin.reports.edit', $report) }}" class="btn btn-primary">Edit Report</a>
         </div>
@@ -52,6 +64,7 @@
             <div class="card" style="margin: 0;">
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">System Details</h3>
                 <div style="display: grid; gap: 8px; font-size: 14px; color: var(--text-gray);">
+                    <div><strong style="color: var(--text-dark);">Report UID:</strong> {{ $report->report_uid ?? '-' }}</div>
                     <div><strong style="color: var(--text-dark);">Submitted By User:</strong> {{ $report->user?->name ?? 'Unknown' }}</div>
                     <div><strong style="color: var(--text-dark);">User Email:</strong> {{ $report->user?->email ?? '-' }}</div>
                     <div><strong style="color: var(--text-dark);">Location:</strong> {{ $report->location }}</div>

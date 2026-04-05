@@ -26,6 +26,7 @@
             </select>
             <select class="form-select" name="status">
                 <option value="">All status</option>
+                <option value="pending" @selected($filters['status'] === 'pending')>Pending Approval</option>
                 <option value="open" @selected($filters['status'] === 'open')>Open</option>
                 <option value="closed" @selected($filters['status'] === 'closed')>Closed</option>
             </select>
@@ -44,6 +45,7 @@
             <table style="width: 100%; border-collapse: collapse; min-width: 980px;">
                 <thead>
                     <tr>
+                        <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">UID</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Type</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Title</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Reporter Contact</th>
@@ -56,6 +58,9 @@
                 <tbody>
                     @foreach ($reports as $report)
                         <tr>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: 800; color: var(--text-dark);">
+                                {{ $report->report_uid ?? '-' }}
+                            </td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color);">
                                 @if ($report->type === 'lost')
                                     <span class="badge badge-lost">Lost</span>
@@ -85,6 +90,18 @@
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     <a class="btn btn-outline" style="padding: 7px 12px;" href="{{ route('admin.reports.show', $report) }}">View</a>
                                     <a class="btn btn-outline" style="padding: 7px 12px;" href="{{ route('admin.reports.edit', $report) }}">Edit</a>
+                                    @if ($report->status === 'pending')
+                                        <form method="POST" action="{{ route('admin.reports.approve', $report) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn" type="submit" style="padding: 7px 12px; color: #166534; border-color: #bbf7d0; background: #f0fdf4;">Approve</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('admin.reports.reject', $report) }}" onsubmit="return confirm('Reject this report and keep it hidden?');">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn" type="submit" style="padding: 7px 12px; color: #b91c1c; border-color: #fecaca; background: #fef2f2;">Reject</button>
+                                        </form>
+                                    @endif
                                     <form method="POST" action="{{ route('admin.reports.destroy', $report) }}" onsubmit="return confirm('Delete this lost report?');">
                                         @csrf
                                         @method('DELETE')

@@ -363,6 +363,46 @@ class AdminController extends Controller
             ->with('success', 'Report deleted successfully.');
     }
 
+    public function reportsApprove(Request $request, Report $report): RedirectResponse
+    {
+        if ($report->status === 'open') {
+            return back()->with('success', 'Report is already approved and visible.');
+        }
+
+        $beforeStatus = $report->status;
+        $report->update(['status' => 'open']);
+
+        $this->logAdminAction(
+            $request,
+            'report_approved',
+            $report,
+            ucfirst($report->type) . ' report approved by admin.',
+            ['old_status' => $beforeStatus, 'new_status' => 'open']
+        );
+
+        return back()->with('success', 'Report approved and now visible publicly.');
+    }
+
+    public function reportsReject(Request $request, Report $report): RedirectResponse
+    {
+        if ($report->status === 'closed') {
+            return back()->with('success', 'Report is already rejected/closed.');
+        }
+
+        $beforeStatus = $report->status;
+        $report->update(['status' => 'closed']);
+
+        $this->logAdminAction(
+            $request,
+            'report_rejected',
+            $report,
+            ucfirst($report->type) . ' report rejected by admin.',
+            ['old_status' => $beforeStatus, 'new_status' => 'closed']
+        );
+
+        return back()->with('success', 'Report rejected and kept hidden from public listings.');
+    }
+
     public function reportsExportCsv(Request $request): StreamedResponse
     {
         $query = Report::query()->with('user')->latest();
@@ -602,7 +642,7 @@ class AdminController extends Controller
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'date' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
-            'status' => ['required', 'in:open,closed'],
+            'status' => ['required', 'in:pending,open,closed'],
         ];
     }
 

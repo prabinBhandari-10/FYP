@@ -83,6 +83,7 @@
                 <div class="form-group">
                     <label class="form-label" for="status">Status</label>
                     <select class="form-select" id="status" name="status" required>
+                        <option value="pending" @selected(old('status', $report->status) === 'pending')>Pending Approval</option>
                         <option value="open" @selected(old('status', $report->status) === 'open')>Open</option>
                         <option value="closed" @selected(old('status', $report->status) === 'closed')>Closed</option>
                     </select>
