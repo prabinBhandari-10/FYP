@@ -55,6 +55,16 @@ class Report extends Model
         return $this->hasMany(Sighting::class);
     }
 
+    public function foundResponses(): HasMany
+    {
+        return $this->hasMany(FoundResponse::class);
+    }
+
+    public function approvedClaims(): HasMany
+    {
+        return $this->hasMany(Claim::class, 'item_id')->where('status', 'approved');
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ReportImage::class)->orderBy('sort_order');

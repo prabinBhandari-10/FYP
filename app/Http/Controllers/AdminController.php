@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\ChatConversation;
 use App\Models\Claim;
+use App\Models\FoundResponse;
+use App\Models\Notification;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -241,7 +244,7 @@ class AdminController extends Controller
 
     public function reportsShow(Report $report): View
     {
-        $report->load(['user', 'claims.user', 'sightings.user']);
+        $report->load(['user', 'claims.user', 'sightings.user', 'foundResponses.user', 'foundResponses.reviewer']);
 
         return view('admin.reports.show', [
             'report' => $report,
@@ -403,6 +406,70 @@ class AdminController extends Controller
         return back()->with('success', 'Report rejected and kept hidden from public listings.');
     }
 
+    public function foundResponsesApprove(Request $request, FoundResponse $foundResponse): RedirectResponse
+    {
+        if ($foundResponse->status !== 'pending') {
+            return back()->with('success', 'This found response is already reviewed.');
+        }
+
+        $foundResponse->update([
+            'status' => 'approved',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        $lostReport = $foundResponse->report;
+
+        Report::create([
+            'user_id' => $request->user()->id,
+            'reporter_name' => $foundResponse->is_anonymous ? 'Anonymous Finder' : ($foundResponse->name ?: 'Finder'),
+            'reporter_email' => $foundResponse->is_anonymous ? 'hidden@example.com' : ($foundResponse->contact ?: 'hidden@example.com'),
+            'reporter_phone' => $foundResponse->is_anonymous ? 'Hidden' : ($foundResponse->contact ?: 'Not provided'),
+            'title' => 'Possible match for ' . $lostReport->title,
+            'description' => 'Created from admin-approved found response.\n\nFinder message: ' . $foundResponse->message,
+            'type' => 'found',
+            'category' => $lostReport->category,
+            'location' => $foundResponse->found_location ?: $lostReport->location,
+            'date' => $foundResponse->found_date ?: now()->toDateString(),
+            'image' => $foundResponse->image,
+            'status' => 'open',
+            'is_anonymous' => true,
+        ]);
+
+        $this->logAdminAction(
+            $request,
+            'found_response_approved',
+            $foundResponse,
+            'Found response approved by admin and published as a possible found report.',
+            ['found_response_id' => $foundResponse->id, 'report_id' => $lostReport->id]
+        );
+
+        return back()->with('success', 'Found response approved and added as a possible match.');
+    }
+
+    public function foundResponsesReject(Request $request, FoundResponse $foundResponse): RedirectResponse
+    {
+        if ($foundResponse->status !== 'pending') {
+            return back()->with('success', 'This found response is already reviewed.');
+        }
+
+        $foundResponse->update([
+            'status' => 'rejected',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        $this->logAdminAction(
+            $request,
+            'found_response_rejected',
+            $foundResponse,
+            'Found response rejected by admin.',
+            ['found_response_id' => $foundResponse->id, 'report_id' => $foundResponse->report_id]
+        );
+
+        return back()->with('success', 'Found response rejected.');
+    }
+
     public function reportsExportCsv(Request $request): StreamedResponse
     {
         $query = Report::query()->with('user')->latest();
@@ -490,14 +557,93 @@ class AdminController extends Controller
 
     public function approve(Request $request, Claim $claim): RedirectResponse
     {
+        $claim->load(['report', 'user']);
+
         if ($claim->status !== 'pending') {
             return back()->with('success', 'Claim status is already decided.');
         }
 
-        $claim->update([
-            'status' => 'approved',
-            'held_at' => null,
-        ]);
+        if (! $claim->report || $claim->report->type !== 'found') {
+            return back()->withErrors(['claim' => 'Only found item claims can be approved.']);
+        }
+
+        $alreadyApproved = Claim::query()
+            ->where('item_id', $claim->item_id)
+            ->where('status', 'approved')
+            ->where('id', '!=', $claim->id)
+            ->exists();
+
+        if ($alreadyApproved) {
+            return back()->withErrors(['claim' => 'Another claim for this item is already approved.']);
+        }
+
+        DB::transaction(function () use ($claim) {
+            $claim->update([
+                'status' => 'approved',
+                'held_at' => null,
+            ]);
+
+            $report = $claim->report()->select('id', 'user_id', 'status')->first();
+
+            if ($report && $report->status !== 'closed') {
+                $report->update(['status' => 'closed']);
+            }
+
+            $otherPendingClaims = Claim::query()
+                ->where('item_id', $claim->item_id)
+                ->where('status', 'pending')
+                ->where('id', '!=', $claim->id)
+                ->get();
+
+            foreach ($otherPendingClaims as $pendingClaim) {
+                $pendingClaim->update([
+                    'status' => 'rejected',
+                    'held_at' => null,
+                ]);
+
+                Notification::create([
+                    'user_id' => $pendingClaim->user_id,
+                    'type' => 'claim_rejected',
+                    'title' => 'Claim Rejected',
+                    'message' => 'Another claim for this item was approved by admin, so your claim was rejected.',
+                    'related_report_id' => $pendingClaim->item_id,
+                    'related_claim_id' => $pendingClaim->id,
+                ]);
+            }
+
+            if ($report && Schema::hasTable('chat_conversations')) {
+                ChatConversation::firstOrCreate(
+                    ['claim_id' => $claim->id],
+                    [
+                        'finder_id' => $report->user_id,
+                        'claimant_id' => $claim->user_id,
+                        'approved_at' => now(),
+                    ]
+                );
+            }
+        });
+
+        if ($claim->user_id) {
+            Notification::create([
+                'user_id' => $claim->user_id,
+                'type' => 'claim_approved',
+                'title' => 'Claim Approved',
+                'message' => 'Your claim has been approved. You can now chat with the finder through the system.',
+                'related_report_id' => $claim->item_id,
+                'related_claim_id' => $claim->id,
+            ]);
+        }
+
+        if ($claim->report && $claim->report->user_id) {
+            Notification::create([
+                'user_id' => $claim->report->user_id,
+                'type' => 'report_comment',
+                'title' => 'Claim Approved for Your Item',
+                'message' => 'A claim on your found item was approved. You can now chat with the claimant.',
+                'related_report_id' => $claim->item_id,
+                'related_claim_id' => $claim->id,
+            ]);
+        }
 
         $this->logAdminAction(
             $request,
@@ -512,6 +658,8 @@ class AdminController extends Controller
 
     public function reject(Request $request, Claim $claim): RedirectResponse
     {
+        $claim->load(['report', 'user']);
+
         if ($claim->status !== 'pending') {
             return back()->with('success', 'Claim status is already decided.');
         }
@@ -520,6 +668,17 @@ class AdminController extends Controller
             'status' => 'rejected',
             'held_at' => null,
         ]);
+
+        if ($claim->user_id) {
+            Notification::create([
+                'user_id' => $claim->user_id,
+                'type' => 'claim_rejected',
+                'title' => 'Claim Rejected',
+                'message' => 'Your claim was reviewed by admin and rejected.',
+                'related_report_id' => $claim->item_id,
+                'related_claim_id' => $claim->id,
+            ]);
+        }
 
         $this->logAdminAction(
             $request,

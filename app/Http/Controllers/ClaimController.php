@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Claim;
+use App\Models\Notification;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
@@ -35,9 +36,32 @@ class ClaimController extends Controller
 
     public function store(Request $request, Report $report)
     {
+        if ($report->type !== 'found') {
+            return back()->withErrors([
+                'claim' => 'Claims can only be submitted for found item reports.',
+            ]);
+        }
+
         if ($report->status !== 'open') {
             return back()->withErrors([
                 'claim' => 'This report is not publicly available for claims yet.',
+            ]);
+        }
+
+        if ($report->user_id === $request->user()->id) {
+            return back()->withErrors([
+                'claim' => 'You cannot claim your own found item report.',
+            ]);
+        }
+
+        $alreadyApproved = Claim::query()
+            ->where('item_id', $report->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if ($alreadyApproved) {
+            return back()->withErrors([
+                'claim' => 'This item already has an approved claim, so new claims are closed.',
             ]);
         }
 
@@ -65,7 +89,7 @@ class ClaimController extends Controller
             $proofPhotoPath = $request->file('proof_photo')->store('claims/proof', 'public');
         }
 
-        Claim::create([
+        $claim = Claim::create([
             'user_id' => $request->user()->id,
             'item_id' => $report->id,
             'message' => $validated['message'],
@@ -74,6 +98,17 @@ class ClaimController extends Controller
             'proof_photo_path' => $proofPhotoPath,
             'status' => 'pending',
         ]);
+
+        if ($report->user_id) {
+            Notification::create([
+                'user_id' => $report->user_id,
+                'type' => 'claim_received',
+                'title' => 'New Claim Received',
+                'message' => 'A new claim was submitted for your found item: "' . $report->title . '".',
+                'related_report_id' => $report->id,
+                'related_claim_id' => $claim->id,
+            ]);
+        }
 
         return redirect()
             ->route('claims.index')

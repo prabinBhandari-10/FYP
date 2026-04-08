@@ -70,4 +70,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+    public function chatConversationsAsFinder(): HasMany
+    {
+        return $this->hasMany(ChatConversation::class, 'finder_id');
+    }
+
+    public function chatConversationsAsClaimant(): HasMany
+    {
+        return $this->hasMany(ChatConversation::class, 'claimant_id');
+    }
+
+    public function chatMessagesSent(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class, 'sender_id');
+    }
+
+    public function chatMessagesReceived(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class, 'receiver_id');
+    }
 }

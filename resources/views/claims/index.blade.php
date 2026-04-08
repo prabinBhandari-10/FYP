@@ -23,6 +23,17 @@
                 @if ($claim->report)
                     <a class="btn btn-outline" href="{{ route('items.show', $claim->report) }}">View Item</a>
                 @endif
+
+                @if ($claim->status === 'approved')
+                    <div style="margin-top: 12px; padding: 12px; border-radius: 12px; background: var(--bg-soft); border: 1px solid var(--line);">
+                        <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-muted);">Chat is available because this claim has been approved by admin.</p>
+                        <a class="btn btn-primary" href="{{ route('chat.show', $claim) }}">Start Chat</a>
+                    </div>
+                @elseif ($claim->status === 'pending')
+                    <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted);">Chat is locked until admin reviews and approves your claim.</p>
+                @elseif ($claim->status === 'rejected')
+                    <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted);">Chat is not available because this claim was rejected.</p>
+                @endif
             </article>
         @endforeach
     </section>

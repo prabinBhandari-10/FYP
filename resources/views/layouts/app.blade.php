@@ -20,10 +20,10 @@
             --text-muted: #4f6285;
             --text-soft: #7184a8;
             --line: #d9e4f6;
-            --primary: #3f51d9;
-            --primary-strong: #2f3fba;
-            --primary-tint: #eef1ff;
-            --accent: #10a6c6;
+            --primary: #57b7e8;
+            --primary-strong: #2f97cf;
+            --primary-tint: #e6f7ff;
+            --accent: #24b8df;
             --danger: #d0355f;
             --success: #0f9b6f;
             --radius-lg: 20px;
@@ -42,8 +42,8 @@
         body {
             font-family: 'Manrope', sans-serif;
             background:
-                radial-gradient(900px 340px at -10% -10%, rgba(63, 81, 217, 0.11), transparent 60%),
-                radial-gradient(760px 300px at 110% 8%, rgba(16, 166, 198, 0.08), transparent 62%),
+                radial-gradient(900px 340px at -10% -10%, rgba(87, 183, 232, 0.16), transparent 60%),
+                radial-gradient(760px 300px at 110% 8%, rgba(36, 184, 223, 0.10), transparent 62%),
                 var(--bg-page);
             color: var(--text-main);
             min-height: 100vh;
@@ -70,10 +70,10 @@
             width: min(1160px, 100% - 32px);
             margin: 0 auto;
             min-height: 74px;
-            display: flex;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+            gap: 18px;
         }
 
         .brand {
@@ -130,18 +130,28 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+            min-width: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .nav-links::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-link {
-            padding: 9px 14px;
+            padding: 8px 12px;
             border-radius: 999px;
             text-decoration: none;
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .nav-link:hover {
@@ -153,7 +163,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: flex-end;
         }
 
@@ -179,12 +189,12 @@
 
         .btn-primary {
             color: #fff;
-            background: linear-gradient(135deg, var(--primary), #5568e6);
-            box-shadow: 0 10px 20px rgba(63, 81, 217, 0.25);
+            background: linear-gradient(135deg, #6ec7ef, #57b7e8);
+            box-shadow: 0 10px 20px rgba(87, 183, 232, 0.24);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 14px 24px rgba(63, 81, 217, 0.3);
+            box-shadow: 0 14px 24px rgba(87, 183, 232, 0.30);
         }
 
         .btn-outline {
@@ -521,63 +531,69 @@
 
         .site-footer-quick {
             margin-top: 40px;
-            border-top: 1px solid var(--line);
-            background: #eef4ff;
-            padding: 26px 18px 14px;
+            border-top: 0;
+            background: linear-gradient(180deg, #dff3ff 0%, #cfefff 100%);
+            color: #16324f;
+            padding: 30px 18px 18px;
         }
 
         .site-footer-inner {
             width: min(1160px, 100%);
             margin: 0 auto;
             display: grid;
-            grid-template-columns: minmax(220px, 1.2fr) minmax(0, 1.8fr);
-            gap: 24px;
+            grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+            gap: 26px;
         }
 
         .site-footer-brand h3 {
             margin: 0 0 10px;
             font-size: 26px;
+            color: #16324f;
         }
 
         .site-footer-brand p {
             margin: 0;
-            color: var(--text-muted);
+            color: #35597a;
             line-height: 1.6;
             font-size: 14px;
         }
 
         .site-footer-links-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(120px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
         }
 
         .site-footer-col h4 {
             margin: 0 0 8px;
-            font-size: 14px;
-            color: var(--text-main);
+            font-size: 16px;
+            color: #16324f;
         }
 
         .site-footer-col a {
             display: block;
-            margin-bottom: 7px;
+            margin-bottom: 8px;
             text-decoration: none;
-            color: var(--text-muted);
+            color: #35597a;
             font-size: 14px;
             font-weight: 600;
         }
 
         .site-footer-col a:hover {
-            color: var(--primary);
+            color: #0f2942;
         }
 
         .site-footer-bottom {
             width: min(1160px, 100%);
-            margin: 16px auto 0;
-            padding-top: 10px;
-            border-top: 1px solid #d6e2f5;
-            color: var(--text-muted);
+            margin: 20px auto 0;
+            padding-top: 14px;
+            border-top: 1px solid rgba(22, 50, 79, 0.14);
+            color: #35597a;
             font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .social-links {
@@ -594,17 +610,57 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--primary-tint);
-            color: var(--primary);
+            background: rgba(255, 255, 255, 0.7);
+            color: #1a4f7a;
             text-decoration: none;
             font-size: 20px;
             transition: all 0.2s ease;
         }
 
         .social-link:hover {
-            background: var(--primary);
-            color: white;
+            background: #7cc8ee;
+            color: #0f2942;
             transform: translateY(-2px);
+        }
+
+        .site-footer-updated p {
+            color: #35597a;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .site-footer-subscribe {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .site-footer-subscribe input {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid rgba(22, 50, 79, 0.16);
+            border-radius: 10px;
+            padding: 11px 12px;
+            background: rgba(255, 255, 255, 0.82);
+            color: #16324f;
+            outline: none;
+        }
+
+        .site-footer-subscribe input::placeholder {
+            color: #66809c;
+        }
+
+        .site-footer-subscribe .btn-primary {
+            background: linear-gradient(135deg, #7cc8ee 0%, #57b7e8 100%);
+            color: #10324f;
+            box-shadow: none;
+            border: 1px solid rgba(22, 50, 79, 0.1);
+        }
+
+        .site-footer-subscribe .btn-primary:hover {
+            background: linear-gradient(135deg, #8fd4f3 0%, #66c2ee 100%);
+            color: #0f2942;
+            box-shadow: none;
         }
 
         .welcome-toast {
@@ -692,6 +748,18 @@
                 flex-direction: column;
             }
 
+            .nav-links,
+            .nav-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+
+            .nav-link {
+                white-space: normal;
+            }
+
             .main-content {
                 width: calc(100% - 20px);
             }
@@ -703,6 +771,12 @@
             .site-footer-inner,
             .site-footer-links-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .site-footer-bottom,
+            .site-footer-subscribe {
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .auth-card {
@@ -736,38 +810,43 @@
 </head>
 <body>
     @php
-        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        $activeUser = \Illuminate\Support\Facades\Auth::guard('web')->user()
+            ?? \Illuminate\Support\Facades\Auth::guard('admin')->user();
+        $isAuthenticated = (bool) $activeUser;
+        $isAdmin = $activeUser?->role === 'admin';
+        $homeRoute = $isAdmin ? route('admin.dashboard') : route('home');
     @endphp
 
     <header class="site-header">
         <nav class="site-nav" aria-label="Main">
-            <a href="{{ route('home') }}" class="brand" aria-label="Lost and Found Home">
+            <a href="{{ $homeRoute }}" class="brand" aria-label="Lost and Found Home">
                 <img src="{{ asset('images/logo.png') }}" alt="Lost and Found logo" class="brand-logo">
                 <span class="brand-name">Lost <span>&amp;</span> Found</span>
             </a>
 
             <div class="nav-links">
-                <a href="{{ route('home') }}" class="nav-link">Home</a>
+                <a href="{{ $homeRoute }}" class="nav-link">Home</a>
                 <a href="{{ route('items.index') }}" class="nav-link">Browse</a>
                 <a href="{{ route('reports.track.form') }}" class="nav-link">Track Report</a>
                 <a href="{{ route('about') }}" class="nav-link">About</a>
                 <a href="{{ route('contact') }}" class="nav-link">Contact</a>
-                @auth
+                @if ($isAuthenticated)
                     @if (! $isAdmin)
                         <a href="{{ route('reports.lost.create') }}" class="nav-link">Report Lost</a>
                         <a href="{{ route('reports.found.create') }}" class="nav-link">Report Found</a>
                     @endif
-                @endauth
+                @endif
             </div>
 
             <div class="nav-actions">
-                @auth
+                @if ($isAuthenticated)
+                    <a href="{{ route('chat.index') }}" class="btn btn-ghost" title="Chats">Chats</a>
                     <a href="{{ route('notifications.index') }}" class="btn btn-ghost" style="position: relative;" title="Notifications">
                         🔔
                         @php
                             $unreadCount = 0;
                             try {
-                                $unreadCount = auth()->user()->notifications()->where('is_read', false)->count();
+                                $unreadCount = $activeUser->notifications()->where('is_read', false)->count();
                             } catch (\Exception $e) {
                                 // Notifications table may not exist yet
                             }
@@ -783,14 +862,14 @@
                     @else
                         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Dashboard</a>
                     @endif
-                    <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                    <form action="{{ $isAdmin ? route('admin.logout') : route('logout') }}" method="POST" style="margin: 0;">
                         @csrf
                         <button type="submit" class="btn btn-ghost">Logout</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-ghost">Login</a>
                     <a href="{{ route('register') }}" class="btn btn-primary">Create Account</a>
-                @endauth
+                @endif
             </div>
         </nav>
     </header>
@@ -798,6 +877,10 @@
     <main class="main-content">
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-error">{{ session('error') }}</div>
         @endif
 
         @if ($errors->any() && ! request()->routeIs('login') && ! request()->routeIs('register'))

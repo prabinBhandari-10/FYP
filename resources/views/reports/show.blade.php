@@ -4,7 +4,9 @@
 
 @section('content')
 @php
-    $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+    $activeUser = \Illuminate\Support\Facades\Auth::guard('web')->user()
+        ?? \Illuminate\Support\Facades\Auth::guard('admin')->user();
+    $isAdmin = $activeUser?->role === 'admin';
     [$locationBlock, $locationPlace] = array_pad(explode(' - ', (string) $report->location, 2), 2, '');
     if ($locationPlace === '') {
         $locationPlace = $locationBlock;
@@ -19,6 +21,18 @@
 @if (session('show_matches'))
     <section class="alert alert-success" style="margin-bottom: 14px; border-radius: 16px;">
         Smart matching is active. Review the <strong>Possible Matches</strong> section below for similar {{ $report->type === 'lost' ? 'found' : 'lost' }} items.
+    </section>
+@endif
+
+@if (session('success'))
+    <section class="alert alert-success" style="margin-bottom: 14px; border-radius: 16px;">
+        {{ session('success') }}
+    </section>
+@endif
+
+@if ($errors->has('report'))
+    <section class="alert alert-error" style="margin-bottom: 14px; border-radius: 16px;">
+        {{ $errors->first('report') }}
     </section>
 @endif
 
@@ -71,7 +85,7 @@
 
             @if (($potentialMatches ?? collect())->isEmpty())
                 <div class="empty-state" style="padding: 22px;">
-                    No close matches found right now. New reports will be checked automatically.
+                    We are continuously checking for similar items. You will be notified if a match is found.
                 </div>
             @else
                 <div style="display: grid; gap: 10px;">
@@ -89,10 +103,20 @@
                 </div>
             @endif
         </article>
+
+        @if($report->type === 'lost' && $report->status === 'open')
+            <article class="card card-soft">
+                <h3 style="font-size: 21px; margin-bottom: 10px;">Next Step</h3>
+                <p class="section-note" style="line-height: 1.7;">
+                    Your report is active. Please wait for possible matches or responses from other users.
+                    You will be notified when there is an update.
+                </p>
+            </article>
+        @endif
     </div>
 
-    <aside style="display: grid; gap: 16px;">
-        <article class="card sticky-panel">
+    <aside class="sticky-panel" style="display: grid; gap: 16px;">
+        <article class="card">
             <h3 style="font-size: 22px; margin-bottom: 12px;">Item Details</h3>
             <div style="display: grid; gap: 10px;">
                 <div><p class="section-note">Report UID</p><p style="font-weight: 800;">{{ $report->report_uid ?? 'Not assigned' }}</p></div>
@@ -112,6 +136,16 @@
                         <a href="{{ route('reports.track.show', $report->report_uid) }}" class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;">Track Using UID</a>
                     </div>
                 @endif
+                @if ($report->type === 'lost' && $report->status === 'open' && $activeUser && ($activeUser->id === $report->user_id || $activeUser->role === 'admin'))
+                    <div>
+                        <p class="section-note" style="margin-bottom: 6px;">If you have already recovered your item, you can close this report.</p>
+                        <form method="POST" action="{{ route('reports.mark-found', $report) }}" onsubmit="return confirm('Mark this report as found and close it?');">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-outline" style="width: 100%;">Mark as Found</button>
+                        </form>
+                    </div>
+                @endif
             </div>
 
             <button type="button" onclick="openShareModal()" class="btn btn-outline" style="width: 100%; margin-top: 14px;">Share Listing</button>
@@ -120,7 +154,7 @@
         @if($report->type === 'found')
             <article class="card">
                 <h3 style="font-size: 21px; margin-bottom: 10px;">Claim Request</h3>
-                @auth
+                @if ($activeUser && ! $isAdmin)
                     @if ($errors->has('claim'))
                         <div class="alert alert-error">{{ $errors->first('claim') }}</div>
                     @endif
@@ -162,16 +196,76 @@
                             <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Claim</button>
                         </form>
                     @endif
+                @elseif ($isAdmin)
+                    <p class="section-note" style="margin-bottom: 10px;">Admin account can review claims from the Manage Claims page.</p>
                 @else
                     <p class="section-note" style="margin-bottom: 10px;">Please log in to submit a claim.</p>
                     <a href="{{ route('login') }}" class="btn btn-primary" style="width: 100%;">Login to Claim</a>
-                @endauth
+                @endif
+
+                @if ($canOpenChat)
+                    <div style="margin-top: 14px; padding: 14px; border-radius: 14px; background: var(--bg-soft); border: 1px solid var(--line);">
+                        <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-muted);">Chat is available because this claim has been approved by admin.</p>
+                        <a href="{{ route('chat.show', $approvedClaim) }}" class="btn btn-primary" style="width: 100%;">Start Chat</a>
+                    </div>
+                @endif
             </article>
         @endif
 
-        @if($report->type === 'lost')
+        @if($report->type === 'lost' && $report->status === 'open')
+            <article class="card">
+                <h3 style="font-size: 21px; margin-bottom: 10px;">I Found This Item</h3>
+                <p class="section-note" style="margin-bottom: 12px; line-height: 1.7;">
+                    Have you found this item? Submit the details so the admin can verify and help return it to the owner safely.
+                </p>
+
+                <form method="POST" action="{{ route('found-responses.store', $report) }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="form-group">
+                        <label class="form-label" for="found_name">Name</label>
+                        <input class="form-input" type="text" id="found_name" name="name" value="{{ old('name', $activeUser?->name) }}" placeholder="Your name" required>
+                        @error('name')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="found_contact">Contact (phone or email)</label>
+                        <input class="form-input" type="text" id="found_contact" name="contact" value="{{ old('contact', $activeUser?->email) }}" placeholder="98XXXXXXXX or you@example.com" required>
+                        @error('contact')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="found_location">Found Location</label>
+                        <input class="form-input" type="text" id="found_location" name="found_location" value="{{ old('found_location') }}" placeholder="Where did you find it?">
+                        @error('found_location')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="found_date">Found Date</label>
+                        <input class="form-input" type="date" id="found_date" name="found_date" value="{{ old('found_date') }}">
+                        @error('found_date')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="found_message">Message</label>
+                        <textarea class="form-textarea" id="found_message" name="found_message" placeholder="Share simple details so admin can verify" required>{{ old('found_message') }}</textarea>
+                        @error('found_message')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="found_image">Upload Image</label>
+                        <input class="form-input" type="file" id="found_image" name="found_image" accept="image/*">
+                        @error('found_image')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Found Item</button>
+                </form>
+            </article>
+
             <article class="card">
                 <h3 style="font-size: 21px; margin-bottom: 10px;">Report Sighting</h3>
+                <p class="section-note" style="margin-bottom: 12px; line-height: 1.7;">
+                    Have you seen this item? Help the owner by sharing where and when you saw it.
+                </p>
                 <form method="POST" action="{{ route('sightings.store', $report) }}">
                     @csrf
                     <div class="form-group">

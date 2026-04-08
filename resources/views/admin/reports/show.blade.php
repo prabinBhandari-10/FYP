@@ -79,8 +79,60 @@
                 <div style="display: grid; gap: 8px; font-size: 14px; color: var(--text-gray);">
                     <div><strong style="color: var(--text-dark);">Claims:</strong> {{ $report->claims->count() }}</div>
                     <div><strong style="color: var(--text-dark);">Sightings:</strong> {{ $report->sightings->count() }}</div>
+                    <div><strong style="color: var(--text-dark);">Found Responses:</strong> {{ $report->foundResponses->count() }}</div>
                 </div>
             </div>
+
+            @if ($report->type === 'lost')
+                <div class="card" style="margin: 0;">
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Found Response Submissions</h3>
+
+                    @if ($report->foundResponses->isEmpty())
+                        <p style="font-size: 14px; color: var(--text-gray); margin: 0;">No found responses submitted yet.</p>
+                    @else
+                        <div style="display: grid; gap: 10px;">
+                            @foreach ($report->foundResponses->sortByDesc('created_at') as $response)
+                                <div style="border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; background: #fff;">
+                                    <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; align-items: center; flex-wrap: wrap;">
+                                        <strong style="font-size: 14px; color: var(--text-dark);">
+                                            {{ $response->is_anonymous ? 'Anonymous' : ($response->name ?: 'Unknown') }}
+                                        </strong>
+                                        <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $response->status }}</span>
+                                    </div>
+
+                                    <div style="display: grid; gap: 4px; font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">
+                                        <div><strong style="color: var(--text-dark);">Contact:</strong> {{ $response->contact ?: 'Hidden / Not provided' }}</div>
+                                        <div><strong style="color: var(--text-dark);">Found Location:</strong> {{ $response->found_location ?: '-' }}</div>
+                                        <div><strong style="color: var(--text-dark);">Found Date:</strong> {{ $response->found_date?->format('Y-m-d') ?: '-' }}</div>
+                                        <div><strong style="color: var(--text-dark);">Message:</strong> {{ $response->message }}</div>
+                                    </div>
+
+                                    @if ($response->image)
+                                        <a href="{{ asset('storage/' . $response->image) }}" target="_blank" class="btn btn-outline" style="font-size: 12px; padding: 6px 10px; margin-bottom: 8px;">View Uploaded Image</a>
+                                    @endif
+
+                                    @if ($response->status === 'pending')
+                                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                            <form method="POST" action="{{ route('admin.found-responses.approve', $response) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn" style="color: #166534; border-color: #bbf7d0; background: #f0fdf4;">Approve</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.found-responses.reject', $response) }}" onsubmit="return confirm('Reject this found response?');">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn" style="color: #b91c1c; border-color: #fecaca; background: #fef2f2;">Reject</button>
+                                            </form>
+                                        </div>
+                                    @else
+                                        <p style="font-size: 12px; color: var(--text-gray); margin: 0;">Reviewed at: {{ $response->reviewed_at?->format('Y-m-d H:i') ?: '-' }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('admin.reports.destroy', $report) }}" onsubmit="return confirm('Delete this lost report? This action cannot be undone.');">
                 @csrf

@@ -58,7 +58,87 @@
                 <a href="{{ route('claims.index') }}" class="btn btn-ghost" style="text-align: center; font-size: 13px;">View My Claims</a>
             </div>
         </article>
+
+        <article class="card card-soft">
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">🔒 Account Security</h3>
+            <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                Update your password or permanently delete your account.
+            </p>
+            <div style="display: grid; gap: 8px;">
+                <button type="button" class="btn btn-outline" style="font-size: 13px;" onclick="document.getElementById('changePasswordSection').scrollIntoView({behavior:'smooth'});">Change Password</button>
+                <button type="button" class="btn btn-ghost" style="font-size: 13px; color: var(--danger);" onclick="document.getElementById('deleteAccountSection').scrollIntoView({behavior:'smooth'});">Delete Account</button>
+            </div>
+        </article>
     </aside>
+</section>
+
+<section class="grid-2" style="margin-bottom: 20px; gap: 20px;">
+    <article class="card" id="changePasswordSection">
+        <h2 style="font-size: 22px; margin: 0 0 10px;">Change Password</h2>
+        <p class="section-note" style="margin-bottom: 16px;">Use a strong password that you do not reuse elsewhere.</p>
+
+        @if ($errors->changePassword->any())
+            <div class="alert alert-error">
+                <ul style="padding-left: 18px; margin: 0;">
+                    @foreach ($errors->changePassword->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('profile.password.update') }}">
+            @csrf
+            @method('PATCH')
+
+            <div class="form-group">
+                <label class="form-label" for="current_password">Current Password</label>
+                <input class="form-input" type="password" id="current_password" name="current_password" required>
+                @error('current_password', 'changePassword')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">New Password</label>
+                <input class="form-input" type="password" id="password" name="password" required>
+                @error('password', 'changePassword')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password_confirmation">Confirm New Password</label>
+                <input class="form-input" type="password" id="password_confirmation" name="password_confirmation" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Password</button>
+        </form>
+    </article>
+
+    <article class="card" id="deleteAccountSection">
+        <h2 style="font-size: 22px; margin: 0 0 10px;">Delete Account</h2>
+        <p class="section-note" style="margin-bottom: 16px;">This will permanently remove your profile, reports, claims, and chat access.</p>
+
+        @if ($errors->deleteAccount->any())
+            <div class="alert alert-error">
+                <ul style="padding-left: 18px; margin: 0;">
+                    @foreach ($errors->deleteAccount->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('profile.destroy') }}" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+            @csrf
+            @method('DELETE')
+
+            <div class="form-group">
+                <label class="form-label" for="delete_current_password">Enter Password to Confirm</label>
+                <input class="form-input" type="password" id="delete_current_password" name="current_password" required>
+                @error('current_password', 'deleteAccount')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+            </div>
+
+            <button type="submit" class="btn" style="background: #ef4444; color: white;">Delete Account</button>
+        </form>
+    </article>
 </section>
 
 <!-- My Reports Section -->

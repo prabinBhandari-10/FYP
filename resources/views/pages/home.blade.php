@@ -268,7 +268,7 @@
             </article>
 
             <article class="card card-soft">
-                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">ℹ️ About FYP</h3>
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">ℹ️ About lost and found</h3>
                 <p style="margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-muted);">
                     Lost & Found helps you find lost items and report found items in your area securely.
                 </p>

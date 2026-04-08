@@ -174,7 +174,7 @@
 
         const locationByBlock = {
             'Nepal Block': ['Annapurna', 'Machapuchhre', 'Begnas', 'Rupa', 'Rara', 'Tilicho', 'Nilgiri', 'Kapuche'],
-            'UK Block': ['Basketball Court', 'Library', 'Canteen', 'Parking Area', 'Table Tennis Board'],
+            'UK Block': ['Basketball Court', 'Library', 'Canteen', 'Parking Area', 'Table Tennis Board', 'Open Access Lab', 'Stonehenge', 'Big Ben'],
             'Pokhara City': ['Lakeside', 'Mahendrapool', 'Prithvi Chowk', 'Chipledhunga', 'New Road', 'Bagar', 'Bindhyabasini', 'Phewa Lake', 'Talchowk', 'Miyapatan', 'Batulechaur', 'Hemja', 'Srijanachowk', 'Nayabazar', 'Rambazar'],
             'Unknown': []
         };

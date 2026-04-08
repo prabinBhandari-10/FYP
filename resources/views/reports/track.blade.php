@@ -35,9 +35,38 @@
                 <span class="badge badge-neutral" style="text-transform: uppercase;">{{ $report->status }}</span>
             </div>
 
-            <div style="background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
-                <p style="margin: 0; font-size: 14px; color: var(--text-main); font-weight: 600;">{{ $statusMessage }}</p>
-            </div>
+            @if ($report->status === 'open')
+                <div style="background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px; display: grid; gap: 10px;">
+                    <div>
+                        <p style="margin: 0 0 4px; font-size: 14px; color: var(--text-muted); font-weight: 700;">Current Status: Approved</p>
+                        <p style="margin: 0; font-size: 14px; color: var(--text-main); line-height: 1.6;">
+                            Your report has been reviewed by the admin and approved successfully.
+                            It is now visible to users for matching and claim purposes.
+                        </p>
+                    </div>
+
+                    <div>
+                        <p style="margin: 0 0 6px; font-size: 14px; color: var(--text-muted); font-weight: 700;">Admin Updates:</p>
+                        <ul style="margin: 0; padding-left: 18px; color: var(--text-main); font-size: 14px; line-height: 1.7; display: grid; gap: 2px;">
+                            <li>{{ $report->created_at?->format('F d, Y h:i A') }} - Report submitted successfully</li>
+                            <li>{{ $report->updated_at?->format('F d, Y h:i A') }} - Admin reviewed your report</li>
+                            <li>{{ $report->updated_at?->format('F d, Y h:i A') }} - Report approved and published</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p style="margin: 0 0 4px; font-size: 14px; color: var(--text-muted); font-weight: 700;">Next Step:</p>
+                        <p style="margin: 0; font-size: 14px; color: var(--text-main); line-height: 1.6;">
+                            Please wait while the system checks for matching found items.
+                            You will receive an update if a possible match is found.
+                        </p>
+                    </div>
+                </div>
+            @else
+                <div style="background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+                    <p style="margin: 0; font-size: 14px; color: var(--text-main); font-weight: 600;">{{ $statusMessage }}</p>
+                </div>
+            @endif
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>

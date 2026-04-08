@@ -2,9 +2,10 @@
 
 namespace App\Listeners;
 
-use App\Notifications\LoginThankYouNotification;
+use App\Mail\WelcomeMail;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class SendLoginSuccessEmail
@@ -13,7 +14,7 @@ class SendLoginSuccessEmail
     {
         $user = $event->user;
 
-        if (! $user || ! $user->email_verified_at || $user->is_blocked) {
+        if (! $user || $user->is_blocked || empty($user->email)) {
             return;
         }
 
@@ -21,17 +22,17 @@ class SendLoginSuccessEmail
             return;
         }
 
-        $sessionKey = 'login_thank_you_email_sent_' . $user->id;
+        $sessionKey = 'welcome_email_sent_on_login_' . $user->id;
 
         if (request()->session()->has($sessionKey)) {
             return;
         }
 
         try {
-            $user->notify(new LoginThankYouNotification());
+            Mail::to($user->email)->send(new WelcomeMail($user));
             request()->session()->put($sessionKey, true);
         } catch (Throwable $e) {
-            Log::error('Failed to send login thank-you email.', [
+            Log::error('Failed to send welcome email on login.', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);

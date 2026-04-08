@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Events\ReportSubmitted;
+use App\Models\Claim;
+use App\Models\FoundResponse;
 use App\Models\Report;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ItemReportController extends Controller
@@ -92,29 +96,63 @@ class ItemReportController extends Controller
 
     public function show(Request $request, Report $report)
     {
-        $user = $request->user();
-        $canViewUnapproved = $user && ($user->role === 'admin' || $user->id === $report->user_id);
+        $user = Auth::guard('web')->user() ?? Auth::guard('admin')->user();
+        $userClaim = null;
+
+        if ($user && $report->type === 'found') {
+            $userClaim = $report->claims()
+                ->where('user_id', $user->id)
+                ->first();
+        }
+
+        $hasApprovedClaimAccess = $userClaim && $userClaim->status === 'approved';
+
+        $canViewUnapproved = $user && (
+            $user->role === 'admin'
+            || $user->id === $report->user_id
+            || $hasApprovedClaimAccess
+        );
 
         if ($report->status !== 'open' && ! $canViewUnapproved) {
             abort(404);
         }
 
         $report->load('user');
-        $existingClaim = null;
+        $existingClaim = $userClaim;
+        $approvedClaim = null;
+        $canOpenChat = false;
         $potentialMatches = $this->findPotentialMatches($report);
 
         if ($user) {
-            $existingClaim = $report->claims()
-                ->where('user_id', $user->id)
+            if (! $existingClaim) {
+                $existingClaim = $report->claims()
+                    ->where('user_id', $user->id)
+                    ->first();
+            }
+
+            $approvedClaim = $report->claims()
+                ->with('user')
+                ->where('status', 'approved')
                 ->first();
+
+            if ($approvedClaim) {
+                $authenticatedIds = [Auth::guard('web')->id(), Auth::guard('admin')->id()];
+                $authenticatedIds = array_values(array_filter($authenticatedIds));
+
+                $canOpenChat = in_array($report->user_id, $authenticatedIds, true)
+                    || in_array($approvedClaim->user_id, $authenticatedIds, true);
+            }
         }
 
         return view('reports.show', [
             'report' => $report,
             'existingClaim' => $existingClaim,
+            'approvedClaim' => $approvedClaim,
+            'canOpenChat' => $canOpenChat,
             'potentialMatches' => $potentialMatches,
         ]);
     }
+
     public function createLost()
     {
         return view('reports.create', [
@@ -155,13 +193,22 @@ class ItemReportController extends Controller
                 'Tilicho',
                 'Nilgiri',
                 'Kapuche',
+                'Canteen',
+                'Library',
+                'Parking Area',
+                'Basketball Court',
+                'Table Tennis Board',
             ],
             'UK Block' => [
-                'Basketball Court',
-                'Library',
-                'Canteen',
+              
+               
+               
                 'Parking Area',
                 'Table Tennis Board',
+                'Open Access Lab',
+                'Stonehenge',
+                'Big Ben',
+                'kingstone'
             ],
             'Pokhara City' => [
                 'Lakeside',
@@ -265,6 +312,18 @@ class ItemReportController extends Controller
 
         event(new ReportSubmitted($report, $request->user()));
 
+        try {
+            if ($type === 'lost') {
+                \Illuminate\Support\Facades\Mail::to($validated['reporter_email'])
+                    ->send(new \App\Mail\LostItemReportMail($report));
+            } elseif ($type === 'found') {
+                \Illuminate\Support\Facades\Mail::to($validated['reporter_email'])
+                    ->send(new \App\Mail\FoundItemReportMail($report));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Report submission email failed: ' . $e->getMessage());
+        }
+
         return redirect()
             ->route('items.show', $report)
             ->with('success', $report->status === 'pending'
@@ -299,6 +358,76 @@ class ItemReportController extends Controller
         ]);
 
         return back()->with('success', 'Thank you! Your sighting report has been sent to the item owner.');
+    }
+
+    public function storeFoundResponse(Request $request, Report $report): RedirectResponse
+    {
+        if ($report->status !== 'open') {
+            abort(404);
+        }
+
+        if ($report->type !== 'lost') {
+            abort(403, 'Found responses can only be submitted for lost items.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'contact' => ['required', 'string', 'max:255'],
+            'found_location' => ['nullable', 'string', 'max:255'],
+            'found_date' => ['nullable', 'date'],
+            'found_message' => ['required', 'string', 'min:10', 'max:1000'],
+            'found_image' => ['nullable', 'image', 'max:4096'],
+        ]);
+
+        $name = trim((string) $validated['name']);
+        $contact = trim((string) $validated['contact']);
+
+        $imagePath = null;
+        if ($request->hasFile('found_image')) {
+            $imagePath = $request->file('found_image')->store('found-responses', 'public');
+        }
+
+        FoundResponse::create([
+            'report_id' => $report->id,
+            'user_id' => $request->user()?->id,
+            'name' => $name,
+            'contact' => $contact,
+            'found_location' => trim((string) ($validated['found_location'] ?? '')) ?: null,
+            'found_date' => $validated['found_date'] ?? null,
+            'message' => $validated['found_message'],
+            'image' => $imagePath,
+            'is_anonymous' => false,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Thank you. Your found item response has been sent to admin for verification.');
+    }
+
+    public function markAsFound(Request $request, Report $report): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            abort(403);
+        }
+
+        $canClose = $user->role === 'admin' || $user->id === $report->user_id;
+
+        if (! $canClose) {
+            abort(403);
+        }
+
+        if ($report->type !== 'lost') {
+            return back()->withErrors(['report' => 'Only lost reports can be marked as found.']);
+        }
+
+        if ($report->status === 'closed') {
+            return back()->with('success', 'This report is already closed.');
+        }
+
+        $report->update(['status' => 'closed']);
+
+        return back()->with('success', 'Report has been marked as found and closed.');
     }
 
     protected function findPotentialMatches(Report $report, int $limit = 4): Collection

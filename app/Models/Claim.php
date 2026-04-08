@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Claim extends Model
 {
@@ -36,5 +37,10 @@ class Claim extends Model
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class, 'item_id');
+    }
+
+    public function chatConversation(): HasOne
+    {
+        return $this->hasOne(ChatConversation::class);
     }
 }

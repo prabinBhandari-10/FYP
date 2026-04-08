@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,8 +23,17 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => [
+                'required', 
+                'string', 
+                'regex:/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/', 
+                'max:255', 
+                'unique:users,email'
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.regex' => 'Please enter a valid email address',
+            'email.unique' => 'Email already registered',
         ]);
 
         $user = User::create([
@@ -33,7 +43,10 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        Auth::login($user);
+        event(new Registered($user));
+
+        Auth::guard('web')->login($user);
+        Auth::shouldUse('web');
         $request->session()->regenerate();
 
         return redirect()->route('profile')->with('success', 'Welcome! Your account has been created.');
@@ -99,32 +112,40 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $user = User::query()
+            ->where('email', $credentials['email'])
+            ->first();
+
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return back()
                 ->withErrors(['email' => 'The provided credentials do not match our records.'])
                 ->onlyInput('email');
         }
 
-        $request->session()->regenerate();
-
-        if ($request->user()?->is_blocked) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
+        if ($user->is_blocked) {
             return back()->withErrors([
                 'email' => 'Your account has been blocked. Please contact the administrator.',
             ]);
         }
 
-        return redirect()->route('home')->with('success', 'Login successful.');
+        $guard = $user->role === 'admin' ? 'admin' : 'web';
+
+        Auth::guard($guard)->login($user, $request->boolean('remember'));
+        Auth::shouldUse($guard);
+        $request->session()->regenerate();
+
+        return redirect()->intended($this->redirectPathForRole($user))
+            ->with('success', 'Login successful.');
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        $guard = $request->routeIs('admin.logout') ? 'admin' : 'web';
 
-        $request->session()->invalidate();
+        Auth::guard($guard)->logout();
+        Auth::shouldUse($guard);
+
+        $request->session()->regenerate();
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'You have been logged out.');
