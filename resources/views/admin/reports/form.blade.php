@@ -71,15 +71,84 @@
                 @enderror
             </div>
 
+            <div class="form-group">
+                <label class="form-label" for="color">Item Color</label>
+                <select class="form-select" id="color" name="color" required>
+                    <option value="">Select a color</option>
+                    @php
+                        $colors = ['Black', 'White', 'Blue', 'Red', 'Green', 'Yellow', 'Pink', 'Purple', 'Brown', 'Gray', 'Silver', 'Gold', 'Multicolor', 'Other'];
+                    @endphp
+                    @foreach ($colors as $color)
+                        <option value="{{ $color }}" @selected(old('color', $report->color) === $color)>{{ $color }}</option>
+                    @endforeach
+                </select>
+                @error('color')
+                    <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
+                @enderror
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
                     <label class="form-label" for="category">Category</label>
-                    <input class="form-input" id="category" name="category" type="text" required value="{{ old('category', $report->category) }}">
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        @php
+                            $cats = ['Electronics', 'Documents/IDs', 'Keys', 'Clothing', 'Accessories', 'Bags/Wallets', 'Books/Stationery', 'Other'];
+                        @endphp
+                        @foreach ($cats as $cat)
+                            <option value="{{ $cat }}" @selected(old('category', $report->category) === $cat)>{{ $cat }}</option>
+                        @endforeach
+                    </select>
                     @error('category')
                         <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
                     @enderror
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label" for="block">Block</label>
+                    <select class="form-select" id="block" name="block" required>
+                        <option value="">Select block</option>
+                        <option value="Nepal Block" @selected(old('block', $report->block ?? '') === 'Nepal Block')>Nepal Block (Inside College)</option>
+                        <option value="UK Block" @selected(old('block', $report->block ?? '') === 'UK Block')>UK Block (Inside College)</option>
+                        <option value="Pokhara City" @selected(old('block', $report->block ?? '') === 'Pokhara City' || old('block', $report->block ?? '') === 'Pokhara')>Pokhara City (Outside College)</option>
+                        <option value="Unknown" @selected(old('block', $report->block ?? '') === 'Unknown')>Unknown</option>
+                    </select>
+                    @error('block')
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="location">Exact Location</label>
+                    <select class="form-select" id="location" name="location" data-old-location="{{ old('location', $report->location ?? '') }}">
+                        <option value="">Select location</option>
+                    </select>
+                    @error('location')
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="location_note">Approximate Location (if exact is unknown)</label>
+                    <input class="form-input" type="text" id="location_note" name="location_note" value="{{ old('location_note', '') }}" placeholder="e.g. Near canteen, around parking area">
+                    @error('location_note')
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="date">Date</label>
+                    <input class="form-input" id="date" name="date" type="date" required value="{{ old('date', optional($report->date)->format('Y-m-d') ?? $report->date) }}">
+                    @error('date')
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                @if($isEdit)
                 <div class="form-group">
                     <label class="form-label" for="status">Status</label>
                     <select class="form-select" id="status" name="status" required>
@@ -91,25 +160,12 @@
                         <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
                     @enderror
                 </div>
+                @else
+                <input type="hidden" name="status" value="open">
+                @endif
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="location">Location (Block - Place)</label>
-                <input class="form-input" id="location" name="location" type="text" required value="{{ old('location', $report->location) }}" placeholder="Nepal Block - Annapurna">
-                @error('location')
-                    <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
-                <div class="form-group">
-                    <label class="form-label" for="date">Date</label>
-                    <input class="form-input" id="date" name="date" type="date" required value="{{ old('date', optional($report->date)->format('Y-m-d') ?? $report->date) }}">
-                    @error('date')
-                        <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
-                    @enderror
-                </div>
-
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
                     <label class="form-label" for="latitude">Latitude</label>
                     <input class="form-input" id="latitude" name="latitude" type="text" value="{{ old('latitude', $report->latitude) }}" placeholder="28.2096">
@@ -144,4 +200,36 @@
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        const blockSelect = document.getElementById('block');
+        const locationSelect = document.getElementById('location');
+        const oldLocation = locationSelect.dataset.oldLocation || '';
+
+        const locationByBlock = {
+            'Nepal Block': ['Annapurna', 'Machapuchhre', 'Begnas', 'Rupa', 'Rara', 'Tilicho', 'Nilgiri', 'Kapuche', 'Canteen', 'Library', 'Parking Area', 'Basketball Court', 'Table Tennis Board'],
+            'UK Block': ['Parking Area', 'Table Tennis Board', 'Open Access Lab', 'Stonehenge', 'Big Ben', 'kingstone'],
+            'Pokhara City': ['Lakeside', 'Mahendrapool', 'Prithvi Chowk', 'Chipledhunga', 'New Road', 'Bagar', 'Bindhyabasini', 'Phewa Lake', 'Talchowk', 'Miyapatan', 'Batulechaur', 'Hemja', 'Srijanachowk', 'Nayabazar', 'Rambazar'],
+            'Unknown': []
+        };
+
+        function populateLocations() {
+            const selectedBlock = blockSelect.value;
+            const options = locationByBlock[selectedBlock] || [];
+
+            locationSelect.innerHTML = '<option value="">Select location</option>';
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                optionElement.selected = option === oldLocation;
+                locationSelect.appendChild(optionElement);
+            });
+        }
+
+        blockSelect.addEventListener('change', populateLocations);
+        populateLocations();
+    })();
+</script>
 @endsection

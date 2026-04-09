@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EmailVerificationCodeMail;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
 
@@ -43,13 +45,23 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        event(new Registered($user));
+        // Generate verification code
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->update([
+            'verification_code' => $verificationCode,
+            'verification_code_expires_at' => now()->addMinutes(15),
+        ]);
 
-        Auth::guard('web')->login($user);
-        Auth::shouldUse('web');
-        $request->session()->regenerate();
+        // Send verification email
+        try {
+            Mail::to($user->email)->send(new EmailVerificationCodeMail($user, $verificationCode));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email: ' . $e->getMessage());
+        }
 
-        return redirect()->route('profile')->with('success', 'Welcome! Your account has been created.');
+        $request->session()->put('pending_verification_user_id', $user->id);
+
+        return redirect()->route('verify-email')->with('success', 'Account created! Please check your email for the verification code.');
     }
 
     public function showLoginForm()
@@ -247,7 +259,98 @@ class AuthController extends Controller
     protected function redirectPathForRole(User $user): string
     {
         return $user->role === 'admin'
-            ? route('admin.dashboard')
-            : route('profile');
+            ? route('admin.home')
+            : route('home');
+    }
+
+    public function showVerifyEmailForm()
+    {
+        $userId = session('pending_verification_user_id');
+        
+        if (!$userId) {
+            return redirect()->route('register')->with('error', 'Please register first.');
+        }
+
+        return view('auth.verify-email');
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $userId = session('pending_verification_user_id');
+        
+        if (!$userId) {
+            return redirect()->route('register')->with('error', 'Session expired. Please register again.');
+        }
+
+        $user = User::find($userId);
+        
+        if (!$user) {
+            return redirect()->route('register')->with('error', 'User not found. Please register again.');
+        }
+
+        $validated = $request->validate([
+            'verification_code' => ['required', 'string', 'size:6'],
+        ], [
+            'verification_code.required' => 'Please enter the verification code.',
+            'verification_code.size' => 'Verification code must be 6 digits.',
+        ]);
+
+        // Check if code is expired
+        if ($user->verification_code_expires_at && now()->isAfter($user->verification_code_expires_at)) {
+            return back()->withErrors(['verification_code' => 'Verification code has expired. Please request a new one.']);
+        }
+
+        // Check if code matches
+        if ($validated['verification_code'] !== $user->verification_code) {
+            return back()->withErrors(['verification_code' => 'Invalid verification code. Please try again.']);
+        }
+
+        // Mark email as verified
+        $user->update([
+            'email_verified_at' => now(),
+            'verification_code' => null,
+            'verification_code_expires_at' => null,
+        ]);
+
+        event(new Registered($user));
+
+        // Log user in
+        Auth::guard('web')->login($user);
+        Auth::shouldUse('web');
+        $request->session()->regenerate();
+        $request->session()->forget('pending_verification_user_id');
+
+        return redirect()->route('profile')->with('success', 'Email verified successfully! Welcome to Lost & Found Management System.');
+    }
+
+    public function resendVerificationCode(Request $request)
+    {
+        $userId = session('pending_verification_user_id');
+        
+        if (!$userId) {
+            return redirect()->route('register')->with('error', 'Session expired. Please register again.');
+        }
+
+        $user = User::find($userId);
+        
+        if (!$user) {
+            return redirect()->route('register')->with('error', 'User not found. Please register again.');
+        }
+
+        // Generate new verification code
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->update([
+            'verification_code' => $verificationCode,
+            'verification_code_expires_at' => now()->addMinutes(15),
+        ]);
+
+        // Send verification email
+        try {
+            Mail::to($user->email)->send(new EmailVerificationCodeMail($user, $verificationCode));
+            return back()->with('success', 'New verification code has been sent to your email.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email: ' . $e->getMessage());
+            return back()->with('error', 'Failed to send verification code. Please try again.');
+        }
     }
 }

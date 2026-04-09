@@ -810,11 +810,13 @@
 </head>
 <body>
     @php
-        $activeUser = \Illuminate\Support\Facades\Auth::guard('web')->user()
-            ?? \Illuminate\Support\Facades\Auth::guard('admin')->user();
+        $preferAdminGuard = request()->routeIs('admin.*');
+        $activeUser = $preferAdminGuard
+            ? (\Illuminate\Support\Facades\Auth::guard('admin')->user() ?? \Illuminate\Support\Facades\Auth::guard('web')->user())
+            : (\Illuminate\Support\Facades\Auth::guard('web')->user() ?? \Illuminate\Support\Facades\Auth::guard('admin')->user());
         $isAuthenticated = (bool) $activeUser;
         $isAdmin = $activeUser?->role === 'admin';
-        $homeRoute = $isAdmin ? route('admin.dashboard') : route('home');
+        $homeRoute = $isAdmin ? route('admin.home') : route('home');
     @endphp
 
     <header class="site-header">
@@ -827,13 +829,20 @@
             <div class="nav-links">
                 <a href="{{ $homeRoute }}" class="nav-link">Home</a>
                 <a href="{{ route('items.index') }}" class="nav-link">Browse</a>
-                <a href="{{ route('reports.track.form') }}" class="nav-link">Track Report</a>
-                <a href="{{ route('about') }}" class="nav-link">About</a>
-                <a href="{{ route('contact') }}" class="nav-link">Contact</a>
+                @if (! $isAdmin)
+                    <a href="{{ route('reports.track.form') }}" class="nav-link">Track Report</a>
+                @endif
+                @if (! $isAdmin)
+                    <a href="{{ route('about') }}" class="nav-link">About</a>
+                    <a href="{{ route('contact') }}" class="nav-link">Contact</a>
+                @endif
                 @if ($isAuthenticated)
                     @if (! $isAdmin)
                         <a href="{{ route('reports.lost.create') }}" class="nav-link">Report Lost</a>
                         <a href="{{ route('reports.found.create') }}" class="nav-link">Report Found</a>
+                    @else
+                        <a href="{{ route('admin.users.index') }}" class="nav-link">Manage Users</a>
+                        <a href="{{ route('admin.reports.index') }}" class="nav-link">Manage Reports</a>
                     @endif
                 @endif
             </div>
@@ -841,25 +850,27 @@
             <div class="nav-actions">
                 @if ($isAuthenticated)
                     <a href="{{ route('chat.index') }}" class="btn btn-ghost" title="Chats">Chats</a>
-                    <a href="{{ route('notifications.index') }}" class="btn btn-ghost" style="position: relative;" title="Notifications">
-                        🔔
-                        @php
-                            $unreadCount = 0;
-                            try {
-                                $unreadCount = $activeUser->notifications()->where('is_read', false)->count();
-                            } catch (\Exception $e) {
-                                // Notifications table may not exist yet
-                            }
-                        @endphp
-                        @if ($unreadCount > 0)
-                            <span style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 999px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
-                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                            </span>
-                        @endif
-                    </a>
                     @if (! $isAdmin)
+                        <a href="{{ route('notifications.index') }}" class="btn btn-ghost" style="position: relative;" title="Notifications">
+                            <wa-icon name="bell" variant="thin"></wa-icon>
+                            @php
+                                $unreadCount = 0;
+                                try {
+                                    $unreadCount = $activeUser->notifications()->where('is_read', false)->count();
+                                } catch (\Exception $e) {
+                                    // Notifications table may not exist yet
+                                }
+                            @endphp
+                            @if ($unreadCount > 0)
+                                <span style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 999px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
+                                    N
+                                </span>
+                            @endif
+                        </a>
                         <a href="{{ route('profile') }}" class="btn btn-outline">Profile</a>
                     @else
+                        <a href="{{ route('admin.notifications.index') }}" class="btn btn-ghost" title="Notifications">Notifications</a>
+                        <a href="{{ route('admin.payments.index') }}" class="btn btn-ghost" title="Payments">Payments</a>
                         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Dashboard</a>
                     @endif
                     <form action="{{ $isAdmin ? route('admin.logout') : route('logout') }}" method="POST" style="margin: 0;">

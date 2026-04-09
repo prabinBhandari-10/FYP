@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -20,56 +21,154 @@ use Illuminate\View\View;
 
 class AdminController extends Controller
 {
-    public function dashboard(): View
+    public function home(): View
     {
-        $stats = [
-            'totalUsers' => 0,
-            'totalReports' => 0,
-            'openReports' => 0,
-            'pendingClaims' => 0,
-            'approvedClaims' => 0,
-            'heldClaims' => 0,
-        ];
+        $stats = $this->adminHomeStats();
 
-        $recentReports = collect();
-        $recentClaims = collect();
-
-        if (Schema::hasTable('users')) {
-            $stats['totalUsers'] = User::count();
-        }
+        $latestReport = null;
+        $latestClaim = null;
+        $latestNotification = null;
 
         if (Schema::hasTable('reports')) {
-            $stats['totalReports'] = Report::count();
+            $latestReport = Report::query()->with('user')->latest()->first();
+        }
 
-            if (Schema::hasColumn('reports', 'status')) {
-                $stats['openReports'] = Report::where('status', 'open')->count();
-            }
+        if (Schema::hasTable('claims')) {
+            $latestClaim = Claim::query()->with(['user', 'report'])->latest()->first();
+        }
 
-            $recentReports = Report::query()
+        if (Schema::hasTable('notifications')) {
+            $latestNotification = Notification::query()->with(['user', 'report', 'claim'])->latest()->first();
+        }
+
+        $urgentReports = collect();
+        if (Schema::hasTable('reports')) {
+            $urgentReports = Report::query()
+                ->where('status', 'pending')
+                ->where('created_at', '<=', now()->subDays(3))
                 ->with('user')
                 ->latest()
                 ->take(5)
                 ->get();
         }
 
+        $pendingClaims = collect();
         if (Schema::hasTable('claims')) {
-            if (Schema::hasColumn('claims', 'status')) {
-                $stats['pendingClaims'] = Claim::where('status', 'pending')->count();
-                $stats['approvedClaims'] = Claim::where('status', 'approved')->count();
-            }
-
-            if (Schema::hasColumn('claims', 'held_at')) {
-                $stats['heldClaims'] = Claim::whereNotNull('held_at')->where('status', 'pending')->count();
-            }
-
-            $recentClaims = Claim::query()
+            $pendingClaims = Claim::query()
+                ->where('status', 'pending')
                 ->with(['user', 'report'])
                 ->latest()
                 ->take(5)
                 ->get();
         }
 
-        return view('admin.dashboard', compact('stats', 'recentReports', 'recentClaims'));
+        return view('admin.home', compact(
+            'stats',
+            'latestReport',
+            'latestClaim',
+            'latestNotification',
+            'urgentReports',
+            'pendingClaims'
+        ));
+    }
+
+    public function dashboard(): View
+    {
+        $stats = $this->adminDashboardStats();
+
+        $recentReports = collect();
+        $recentClaims = collect();
+        $recentUsers = collect();
+        $dailyReportTrend = [];
+        $topCategories = collect();
+        $topLocations = collect();
+        $reportTypeBreakdown = collect();
+        $claimStatusBreakdown = collect();
+
+        if (Schema::hasTable('reports')) {
+            $recentReports = Report::query()
+                ->with('user')
+                ->latest()
+                ->take(8)
+                ->get();
+
+            $topCategories = Report::query()
+                ->select('category', DB::raw('COUNT(*) as total'))
+                ->groupBy('category')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
+
+            $topLocations = Report::query()
+                ->select('location', DB::raw('COUNT(*) as total'))
+                ->groupBy('location')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
+
+            $reportTypeBreakdown = Report::query()
+                ->select('type', DB::raw('COUNT(*) as total'))
+                ->groupBy('type')
+                ->get();
+
+            $dailyReportTrend = $this->buildDailyTrend(Report::class);
+        }
+
+        if (Schema::hasTable('claims')) {
+            $recentClaims = Claim::query()
+                ->with(['user', 'report'])
+                ->latest()
+                ->take(8)
+                ->get();
+
+            $claimStatusBreakdown = Claim::query()
+                ->select('status', DB::raw('COUNT(*) as total'))
+                ->groupBy('status')
+                ->get();
+        }
+
+        if (Schema::hasTable('users')) {
+            $recentUsers = User::query()->latest()->take(5)->get();
+        }
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'recentReports',
+            'recentClaims',
+            'recentUsers',
+            'dailyReportTrend',
+            'topCategories',
+            'topLocations',
+            'reportTypeBreakdown',
+            'claimStatusBreakdown'
+        ));
+    }
+
+    public function notificationsIndex(): View
+    {
+        $notifications = Notification::query()
+            ->with(['user', 'report', 'claim'])
+            ->latest()
+            ->paginate(20);
+
+        $unreadCount = Notification::query()->where('is_read', false)->count();
+
+        return view('admin.notifications.index', compact('notifications', 'unreadCount'));
+    }
+
+    public function paymentsIndex(): View
+    {
+        $pendingPayments = 0;
+        $recentNotes = collect();
+
+        if (Schema::hasTable('notifications')) {
+            $recentNotes = Notification::query()->latest()->take(5)->get();
+        }
+
+        return view('admin.payments.index', [
+            'pendingPayments' => $pendingPayments,
+            'recentNotes' => $recentNotes,
+        ]);
     }
 
     public function claimsIndex(): View
@@ -195,6 +294,7 @@ class AdminController extends Controller
                 'type' => $type,
                 'status' => 'open',
                 'date' => now()->toDateString(),
+                'block' => 'Nepal Block',
             ]),
             'formTitle' => 'Create ' . ucfirst($type) . ' Report',
             'formAction' => route('admin.reports.store'),
@@ -206,6 +306,74 @@ class AdminController extends Controller
     public function reportsStore(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->reportRules());
+
+        $locationByBlock = [
+            'Nepal Block' => [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche',
+                'Canteen',
+                'Library',
+                'Parking Area',
+                'Basketball Court',
+                'Table Tennis Board',
+            ],
+            'UK Block' => [
+                'Parking Area',
+                'Table Tennis Board',
+                'Open Access Lab',
+                'Stonehenge',
+                'Big Ben',
+                'kingstone'
+            ],
+            'Pokhara City' => [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar',
+            ],
+            'Unknown' => [],
+        ];
+
+        if ($validated['block'] === 'Pokhara') {
+            $validated['block'] = 'Pokhara City';
+        }
+
+        $selectedLocation = trim((string) ($validated['location'] ?? ''));
+        $locationNote = trim((string) ($validated['location_note'] ?? ''));
+        $validLocations = $locationByBlock[$validated['block']] ?? [];
+
+        $resolvedLocation = null;
+
+        if ($selectedLocation !== '' && in_array($selectedLocation, $validLocations, true)) {
+            $resolvedLocation = $selectedLocation;
+        } elseif ($locationNote !== '') {
+            $resolvedLocation = $locationNote;
+        }
+
+        if ($resolvedLocation === null) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'location' => 'Select an exact location or provide an approximate location note.',
+                ]);
+        }
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -219,14 +387,15 @@ class AdminController extends Controller
             'reporter_phone' => $validated['reporter_phone'],
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'color' => $validated['color'],
             'type' => $validated['type'],
             'category' => $validated['category'],
-            'location' => $validated['location'],
+            'location' => $validated['block'] . ' - ' . $resolvedLocation,
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'date' => $validated['date'],
             'image' => $imagePath,
-            'status' => $validated['status'],
+            'status' => 'open',
         ]);
 
         $this->logAdminAction(
@@ -253,6 +422,13 @@ class AdminController extends Controller
 
     public function reportsEdit(Report $report): View
     {
+        // Parse the location to extract block if not already set
+        if (!$report->block && $report->location) {
+            $parts = explode(' - ', $report->location, 2);
+            $report->block = $parts[0] ?? 'Nepal Block';
+            $report->location = $parts[1] ?? '';
+        }
+
         return view('admin.reports.form', [
             'report' => $report,
             'formTitle' => 'Edit ' . ucfirst($report->type) . ' Report',
@@ -265,6 +441,75 @@ class AdminController extends Controller
     public function reportsUpdate(Request $request, Report $report): RedirectResponse
     {
         $validated = $request->validate($this->reportRules());
+
+        $locationByBlock = [
+            'Nepal Block' => [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche',
+                'Canteen',
+                'Library',
+                'Parking Area',
+                'Basketball Court',
+                'Table Tennis Board',
+            ],
+            'UK Block' => [
+                'Parking Area',
+                'Table Tennis Board',
+                'Open Access Lab',
+                'Stonehenge',
+                'Big Ben',
+                'kingstone'
+            ],
+            'Pokhara City' => [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar',
+            ],
+            'Unknown' => [],
+        ];
+
+        if ($validated['block'] === 'Pokhara') {
+            $validated['block'] = 'Pokhara City';
+        }
+
+        $selectedLocation = trim((string) ($validated['location'] ?? ''));
+        $locationNote = trim((string) ($validated['location_note'] ?? ''));
+        $validLocations = $locationByBlock[$validated['block']] ?? [];
+
+        $resolvedLocation = null;
+
+        if ($selectedLocation !== '' && in_array($selectedLocation, $validLocations, true)) {
+            $resolvedLocation = $selectedLocation;
+        } elseif ($locationNote !== '') {
+            $resolvedLocation = $locationNote;
+        }
+
+        if ($resolvedLocation === null) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'location' => 'Select an exact location or provide an approximate location note.',
+                ]);
+        }
+
         $before = $report->only([
             'type',
             'reporter_name',
@@ -296,8 +541,9 @@ class AdminController extends Controller
             'reporter_phone' => $validated['reporter_phone'],
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'color' => $validated['color'],
             'category' => $validated['category'],
-            'location' => $validated['location'],
+            'location' => $validated['block'] . ' - ' . $resolvedLocation,
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'date' => $validated['date'],
@@ -319,6 +565,7 @@ class AdminController extends Controller
                     'reporter_phone',
                     'title',
                     'description',
+                    'color',
                     'category',
                     'location',
                     'latitude',
@@ -427,6 +674,7 @@ class AdminController extends Controller
             'reporter_phone' => $foundResponse->is_anonymous ? 'Hidden' : ($foundResponse->contact ?: 'Not provided'),
             'title' => 'Possible match for ' . $lostReport->title,
             'description' => 'Created from admin-approved found response.\n\nFinder message: ' . $foundResponse->message,
+            'color' => $lostReport->color ?? 'Unknown',
             'type' => 'found',
             'category' => $lostReport->category,
             'location' => $foundResponse->found_location ?: $lostReport->location,
@@ -560,7 +808,106 @@ class AdminController extends Controller
         $claim->load(['report', 'user']);
 
         if ($claim->status !== 'pending') {
-            return back()->with('success', 'Claim status is already decided.');
+            return back()->with('success', 'Only pending claims can be reviewed at this stage.');
+        }
+
+        if (! $claim->report || $claim->report->type !== 'found') {
+            return back()->withErrors(['claim' => 'Only found item claims can be approved.']);
+        }
+
+        $validated = $request->validate([
+            'payment_required' => ['nullable', 'boolean'],
+            'payment_amount' => ['nullable', 'integer', 'min:1000'],
+            'payment_reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $paymentRequired = (bool) ($validated['payment_required'] ?? false);
+
+        if ($paymentRequired) {
+            if (empty($validated['payment_amount']) || empty($validated['payment_reason'])) {
+                return back()->withErrors([
+                    'claim' => 'Payment amount and reason are required when payment is required.',
+                ]);
+            }
+
+            $claim->update([
+                'status' => 'awaiting_payment',
+                'held_at' => null,
+                'payment_required' => true,
+                'payment_amount' => (int) $validated['payment_amount'],
+                'payment_reason' => (string) $validated['payment_reason'],
+                'payment_status' => 'pending',
+                'payment_pidx' => null,
+                'payment_completed_at' => null,
+            ]);
+
+            if ($claim->user_id) {
+                Notification::create([
+                    'user_id' => $claim->user_id,
+                    'type' => 'claim_received',
+                    'title' => 'Payment Required for Claim',
+                    'message' => 'Admin reviewed your claim and requested payment before final verification.',
+                    'related_report_id' => $claim->item_id,
+                    'related_claim_id' => $claim->id,
+                ]);
+            }
+
+            $this->logAdminAction(
+                $request,
+                'claim_payment_required',
+                $claim,
+                'Admin marked claim as awaiting payment.',
+                [
+                    'claim_id' => $claim->id,
+                    'payment_amount' => (int) $validated['payment_amount'],
+                    'payment_reason' => (string) $validated['payment_reason'],
+                ]
+            );
+
+            return back()->with('success', 'Claim moved to awaiting payment.');
+        }
+
+        $claim->update([
+            'status' => 'under_verification',
+            'held_at' => null,
+            'payment_required' => false,
+            'payment_amount' => null,
+            'payment_reason' => null,
+            'payment_status' => null,
+            'payment_pidx' => null,
+            'payment_completed_at' => null,
+        ]);
+
+        if ($claim->user_id) {
+            Notification::create([
+                'user_id' => $claim->user_id,
+                'type' => 'claim_received',
+                'title' => 'Claim Under Verification',
+                'message' => 'Admin reviewed your claim and moved it to under verification.',
+                'related_report_id' => $claim->item_id,
+                'related_claim_id' => $claim->id,
+            ]);
+        }
+
+        $this->logAdminAction(
+            $request,
+            'claim_under_verification',
+            $claim,
+            'Claim moved to under verification by admin.',
+            ['claim_id' => $claim->id]
+        );
+
+        return back()->with('success', 'Claim moved to under verification.');
+    }
+
+    public function finalApprove(Request $request, Claim $claim): RedirectResponse
+    {
+        $claim->load(['report', 'user']);
+
+        if ($claim->status !== 'under_verification') {
+            return back()->withErrors([
+                'claim' => 'Only claims under verification can be finally approved.',
+            ]);
         }
 
         if (! $claim->report || $claim->report->type !== 'found') {
@@ -589,37 +936,44 @@ class AdminController extends Controller
                 $report->update(['status' => 'closed']);
             }
 
-            $otherPendingClaims = Claim::query()
+            $otherOpenClaims = Claim::query()
                 ->where('item_id', $claim->item_id)
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'awaiting_payment', 'under_verification'])
                 ->where('id', '!=', $claim->id)
                 ->get();
 
-            foreach ($otherPendingClaims as $pendingClaim) {
-                $pendingClaim->update([
+            foreach ($otherOpenClaims as $openClaim) {
+                $openClaim->update([
                     'status' => 'rejected',
                     'held_at' => null,
                 ]);
 
                 Notification::create([
-                    'user_id' => $pendingClaim->user_id,
+                    'user_id' => $openClaim->user_id,
                     'type' => 'claim_rejected',
                     'title' => 'Claim Rejected',
-                    'message' => 'Another claim for this item was approved by admin, so your claim was rejected.',
-                    'related_report_id' => $pendingClaim->item_id,
-                    'related_claim_id' => $pendingClaim->id,
+                    'message' => 'Another claim for this item was finally approved by admin, so your claim was rejected.',
+                    'related_report_id' => $openClaim->item_id,
+                    'related_claim_id' => $openClaim->id,
                 ]);
             }
 
             if ($report && Schema::hasTable('chat_conversations')) {
-                ChatConversation::firstOrCreate(
-                    ['claim_id' => $claim->id],
-                    [
-                        'finder_id' => $report->user_id,
-                        'claimant_id' => $claim->user_id,
-                        'approved_at' => now(),
-                    ]
-                );
+                try {
+                    ChatConversation::firstOrCreate(
+                        ['claim_id' => $claim->id],
+                        [
+                            'finder_id' => $report->user_id,
+                            'claimant_id' => $claim->user_id,
+                            'approved_at' => now(),
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to create chat conversation', [
+                        'claim_id' => $claim->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         });
 
@@ -628,7 +982,7 @@ class AdminController extends Controller
                 'user_id' => $claim->user_id,
                 'type' => 'claim_approved',
                 'title' => 'Claim Approved',
-                'message' => 'Your claim has been approved. You can now chat with the finder through the system.',
+                'message' => 'Your claim has been finally approved. You can now chat with the finder through the system.',
                 'related_report_id' => $claim->item_id,
                 'related_claim_id' => $claim->id,
             ]);
@@ -639,7 +993,7 @@ class AdminController extends Controller
                 'user_id' => $claim->report->user_id,
                 'type' => 'report_comment',
                 'title' => 'Claim Approved for Your Item',
-                'message' => 'A claim on your found item was approved. You can now chat with the claimant.',
+                'message' => 'A claim on your found item was finally approved. You can now chat with the claimant.',
                 'related_report_id' => $claim->item_id,
                 'related_claim_id' => $claim->id,
             ]);
@@ -647,20 +1001,20 @@ class AdminController extends Controller
 
         $this->logAdminAction(
             $request,
-            'claim_approved',
+            'claim_final_approved',
             $claim,
-            'Claim approved by admin.',
+            'Claim finally approved by admin.',
             ['claim_id' => $claim->id]
         );
 
-        return back()->with('success', 'Claim approved.');
+        return back()->with('success', 'Claim finally approved.');
     }
 
     public function reject(Request $request, Claim $claim): RedirectResponse
     {
         $claim->load(['report', 'user']);
 
-        if ($claim->status !== 'pending') {
+        if (in_array($claim->status, ['approved', 'rejected'], true)) {
             return back()->with('success', 'Claim status is already decided.');
         }
 
@@ -693,8 +1047,8 @@ class AdminController extends Controller
 
     public function hold(Request $request, Claim $claim): RedirectResponse
     {
-        if ($claim->status !== 'pending') {
-            return back()->with('success', 'Only pending claims can be put on hold.');
+        if (! in_array($claim->status, ['pending', 'under_verification'], true)) {
+            return back()->with('success', 'Only pending or under verification claims can be put on hold.');
         }
 
         $claim->update([
@@ -795,14 +1149,97 @@ class AdminController extends Controller
             'type' => ['required', 'in:lost,found'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
+            'color' => ['required', 'string', 'max:50'],
             'category' => ['required', 'string', 'max:100'],
-            'location' => ['required', 'string', 'max:255'],
+            'block' => ['required', 'string', 'in:Nepal Block,UK Block,Pokhara City,Pokhara,Unknown'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'location_note' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'date' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
             'status' => ['required', 'in:pending,open,closed'],
         ];
+    }
+
+    protected function adminHomeStats(): array
+    {
+        $stats = [
+            'totalUsers' => 0,
+            'totalReports' => 0,
+            'pendingClaims' => 0,
+            'reportsToday' => 0,
+        ];
+
+        if (Schema::hasTable('users')) {
+            $stats['totalUsers'] = User::count();
+        }
+
+        if (Schema::hasTable('reports')) {
+            $stats['totalReports'] = Report::count();
+            $stats['reportsToday'] = Report::whereDate('created_at', today())->count();
+        }
+
+        if (Schema::hasTable('claims')) {
+            $stats['pendingClaims'] = Claim::where('status', 'pending')->count();
+        }
+
+        return $stats;
+    }
+
+    protected function adminDashboardStats(): array
+    {
+        $stats = [
+            'totalUsers' => 0,
+            'totalReports' => 0,
+            'openReports' => 0,
+            'closedReports' => 0,
+            'lostReports' => 0,
+            'foundReports' => 0,
+            'reportsToday' => 0,
+            'pendingClaims' => 0,
+            'approvedClaims' => 0,
+            'rejectedClaims' => 0,
+            'heldClaims' => 0,
+        ];
+
+        if (Schema::hasTable('users')) {
+            $stats['totalUsers'] = User::count();
+        }
+
+        if (Schema::hasTable('reports')) {
+            $stats['totalReports'] = Report::count();
+            $stats['openReports'] = Report::where('status', 'open')->count();
+            $stats['closedReports'] = Report::where('status', 'closed')->count();
+            $stats['lostReports'] = Report::where('type', 'lost')->count();
+            $stats['foundReports'] = Report::where('type', 'found')->count();
+            $stats['reportsToday'] = Report::whereDate('created_at', today())->count();
+        }
+
+        if (Schema::hasTable('claims')) {
+            $stats['pendingClaims'] = Claim::where('status', 'pending')->count();
+            $stats['approvedClaims'] = Claim::where('status', 'approved')->count();
+            $stats['rejectedClaims'] = Claim::where('status', 'rejected')->count();
+            $stats['heldClaims'] = Claim::whereNotNull('held_at')->where('status', 'pending')->count();
+        }
+
+        return $stats;
+    }
+
+    protected function buildDailyTrend(string $modelClass): array
+    {
+        $trend = [];
+
+        for ($offset = 6; $offset >= 0; $offset--) {
+            $day = Carbon::today()->subDays($offset);
+            $trend[] = [
+                'label' => $day->format('D'),
+                'date' => $day->toDateString(),
+                'count' => $modelClass::whereDate('created_at', $day)->count(),
+            ];
+        }
+
+        return $trend;
     }
 
     protected function logAdminAction(

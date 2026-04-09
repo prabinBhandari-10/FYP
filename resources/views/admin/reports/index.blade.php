@@ -48,6 +48,7 @@
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">UID</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Type</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Title</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Color</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Reporter Contact</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Submitted By</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Location</th>
@@ -72,6 +73,7 @@
                                 <div style="font-weight: 700; color: var(--text-dark);">{{ $report->title }}</div>
                                 <div style="font-size: 12px; color: var(--text-gray);">{{ $report->category }} | {{ $report->date?->format('M d, Y') }}</div>
                             </td>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-gray);">{{ $report->color ?? '-' }}</td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-gray);">
                                 <div>{{ $report->reporter_name }}</div>
                                 <div>{{ $report->reporter_email }}</div>

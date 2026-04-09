@@ -46,77 +46,120 @@ class ChatController extends Controller
 
     public function show(Request $request, Claim $claim): View
     {
-        $user = $this->currentUser($claim);
-        $conversation = $this->conversationForClaim($claim);
+        try {
+            $user = $this->currentUser($claim);
+            $conversation = $this->conversationForClaim($claim);
 
-        $unreadCount = $conversation->messages()
-            ->where('receiver_id', $user->id)
-            ->whereNull('read_at')
-            ->count();
+            if (!$conversation || !$conversation->id) {
+                abort(422, 'Chat conversation could not be established.');
+            }
 
-        $messages = $conversation->messages()
-            ->with(['sender', 'receiver'])
-            ->orderBy('created_at')
-            ->get();
+            $unreadCount = $conversation->messages()
+                ->where('receiver_id', $user->id)
+                ->whereNull('read_at')
+                ->count();
 
-        $conversation->messages()
-            ->where('receiver_id', $user->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            $messages = $conversation->messages()
+                ->with(['sender', 'receiver'])
+                ->orderBy('created_at')
+                ->get();
 
-        return view('chat.show', [
-            'claim' => $claim->load(['report.user', 'user']),
-            'conversation' => $conversation->load(['finder', 'claimant']),
-            'messages' => $messages,
-            'currentUser' => $user,
-            'otherUser' => $this->otherUser($claim, $user->id),
-            'unreadCount' => $unreadCount,
-        ]);
+            $conversation->messages()
+                ->where('receiver_id', $user->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+
+            return view('chat.show', [
+                'claim' => $claim->load(['report.user', 'user']),
+                'conversation' => $conversation->load(['finder', 'claimant']),
+                'messages' => $messages,
+                'currentUser' => $user,
+                'otherUser' => $this->otherUser($claim, $user->id),
+                'unreadCount' => $unreadCount,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Chat show error', [
+                'claim_id' => $claim->id,
+                'error' => $e->getMessage(),
+            ]);
+            abort(422, 'Unable to load chat: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request, Claim $claim): RedirectResponse
     {
-        $user = $this->currentUser($claim);
-        $conversation = $this->conversationForClaim($claim);
+        try {
+            $user = $this->currentUser($claim);
+            $conversation = $this->conversationForClaim($claim);
 
-        $validated = $request->validate([
-            'message' => ['required', 'string', 'max:2000'],
-        ]);
+            $validated = $request->validate([
+                'message' => ['required', 'string', 'max:2000'],
+            ]);
 
-        $otherUser = $this->otherUser($claim, $user->id);
+            $otherUser = $this->otherUser($claim, $user->id);
 
-        ChatMessage::create([
-            'conversation_id' => $conversation->id,
-            'claim_id' => $claim->id,
-            'sender_id' => $user->id,
-            'receiver_id' => $otherUser->id,
-            'message' => $validated['message'],
-        ]);
+            if (!$conversation || !$conversation->id) {
+                return redirect()
+                    ->route('chat.show', $claim)
+                    ->withErrors('Chat conversation could not be created.');
+            }
 
-        $conversation->update(['last_message_at' => now()]);
+            ChatMessage::create([
+                'conversation_id' => $conversation->id,
+                'claim_id' => $claim->id,
+                'sender_id' => $user->id,
+                'receiver_id' => $otherUser->id,
+                'message' => $validated['message'],
+            ]);
 
-        return redirect()
-            ->route('chat.show', $claim)
-            ->with('success', 'Message sent.');
+            $conversation->update(['last_message_at' => now()]);
+
+            return redirect()
+                ->route('chat.show', $claim)
+                ->with('success', 'Message sent.');
+        } catch (\Exception $e) {
+            \Log::error('Chat message store error', [
+                'claim_id' => $claim->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->route('chat.show', $claim)
+                ->withErrors('Error sending message: ' . $e->getMessage());
+        }
     }
 
     protected function conversationForClaim(Claim $claim): ChatConversation
     {
         $report = $claim->report()->select('id', 'user_id', 'title')->firstOrFail();
 
-        return ChatConversation::firstOrCreate(
-            ['claim_id' => $claim->id],
-            [
-                'finder_id' => $report->user_id,
-                'claimant_id' => $claim->user_id,
-                'approved_at' => now(),
-            ]
-        );
+        if (!$report || !$report->user_id || !$claim->user_id) {
+            throw new \Exception('Invalid claim or report data for chat conversation.');
+        }
+
+        $conversation = ChatConversation::where('claim_id', $claim->id)->first();
+
+        if ($conversation) {
+            return $conversation;
+        }
+
+        // Create new conversation if it doesn't exist
+        return ChatConversation::create([
+            'claim_id' => $claim->id,
+            'finder_id' => $report->user_id,
+            'claimant_id' => $claim->user_id,
+            'approved_at' => now(),
+        ]);
     }
 
     protected function otherUser(Claim $claim, int $currentUserId)
     {
         $claim->loadMissing(['report.user', 'user']);
+
+        if (!$claim->report || !$claim->user) {
+            throw new \Exception('Claim or related report/user not found.');
+        }
 
         if ($claim->user_id === $currentUserId) {
             return $claim->report->user;

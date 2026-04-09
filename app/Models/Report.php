@@ -20,6 +20,7 @@ class Report extends Model
         'reporter_phone',
         'title',
         'description',
+        'color',
         'type',
         'category',
         'location',

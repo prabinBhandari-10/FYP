@@ -52,6 +52,7 @@
                         <span class="badge {{ $report->type === 'lost' ? 'badge-lost' : 'badge-found' }}" style="width: fit-content;">{{ strtoupper($report->type) }}</span>
                         <h3 style="font-size: 19px;">{{ $report->title }}</h3>
                         <p class="section-note">{{ $report->location }}</p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Color: <strong>{{ $report->color ?? 'Not specified' }}</strong></p>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px;">
                             <span style="font-size: 13px; font-weight: 700; color: var(--text-muted);">{{ $report->category }}</span>
                             <span style="font-size: 13px; color: var(--text-soft);">{{ $report->date?->format('M d, Y') }}</span>

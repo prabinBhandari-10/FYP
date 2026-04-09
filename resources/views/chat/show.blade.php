@@ -3,6 +3,22 @@
 @section('title', 'Private Chat | Lost & Found')
 
 @section('content')
+@if ($errors->any())
+    <section class="card" style="margin-bottom: 14px; background: #fee2e2; border-left: 4px solid var(--danger);">
+        <div>
+            @foreach ($errors->all() as $error)
+                <p style="margin: 0; font-size: 14px; color: var(--danger);">{{ $error }}</p>
+            @endforeach
+        </div>
+    </section>
+@endif
+
+@if (session('success'))
+    <section class="card" style="margin-bottom: 14px; background: #dcfce7; border-left: 4px solid var(--success);">
+        <p style="margin: 0; font-size: 14px; color: var(--success);">{{ session('success') }}</p>
+    </section>
+@endif
+
 <section class="card" style="margin-bottom: 18px;">
     <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: start;">
         <div>

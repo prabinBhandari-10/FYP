@@ -45,6 +45,20 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label" for="color">Item Color</label>
+                <select class="form-select" id="color" name="color" required>
+                    <option value="">Select a color</option>
+                    @php
+                        $colors = ['Black', 'White', 'Blue', 'Red', 'Green', 'Yellow', 'Pink', 'Purple', 'Brown', 'Gray', 'Silver', 'Gold', 'Multicolor', 'Other'];
+                    @endphp
+                    @foreach ($colors as $color)
+                        <option value="{{ $color }}" @selected(old('color') === $color)>{{ $color }}</option>
+                    @endforeach
+                </select>
+                @error('color')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="form-group">
                 <label class="form-label" for="description">Description</label>
                 <textarea class="form-textarea" id="description" name="description" placeholder="Add clear identifying details and context" required>{{ old('description') }}</textarea>
             </div>

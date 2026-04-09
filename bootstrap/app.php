@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureChatAccess;
 use App\Http\Middleware\EnsureUser;
+use App\Http\Middleware\EnsureEmailIsVerified;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Application;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'user' => EnsureUser::class,
             'chat' => EnsureChatAccess::class,
+            'verified' => EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

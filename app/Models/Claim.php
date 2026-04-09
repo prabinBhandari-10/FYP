@@ -20,12 +20,20 @@ class Claim extends Model
         'proof_photo_path',
         'status',
         'held_at',
+        'payment_required',
+        'payment_amount',
+        'payment_reason',
+        'payment_status',
+        'payment_pidx',
+        'payment_completed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'held_at' => 'datetime',
+            'payment_required' => 'boolean',
+            'payment_completed_at' => 'datetime',
         ];
     }
 

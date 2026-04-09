@@ -33,21 +33,15 @@
         <article class="card">
             <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--text-main);">Actions</h3>
 
-            @if (!$message->admin_response)
-                <form method="POST" action="{{ route('admin.contact-messages.respond', $message) }}" style="display: grid; gap: 12px;">
-                    @csrf
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Your Response</label>
-                        <textarea class="form-textarea" name="admin_response" placeholder="Write your response..." required style="min-height: 140px; font-size: 13px;">{{ old('admin_response') }}</textarea>
-                        @error('admin_response')<div style="color: var(--danger); font-size: 12px; margin-top: 4px;">{{ $message }}</div>@enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Response</button>
-                </form>
-            @else
-                <div style="padding: 12px; background: var(--success); color: white; border-radius: 10px; font-size: 13px; font-weight: 600;">
-                    ✓ Response sent
+            <form method="POST" action="{{ route('admin.contact-messages.respond', $message) }}" style="display: grid; gap: 12px;">
+                @csrf
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Your Response</label>
+                    <textarea class="form-textarea" name="admin_response" placeholder="Write your response..." required style="min-height: 140px; font-size: 13px;">{{ old('admin_response', $message->admin_response) }}</textarea>
+                    @error('admin_response')<div style="color: var(--danger); font-size: 12px; margin-top: 4px;">{{ $message }}</div>@enderror
                 </div>
-            @endif
+                <button type="submit" class="btn btn-primary" style="width: 100%;">{{ $message->admin_response ? 'Update Response' : 'Send Response' }}</button>
+            </form>
 
             <a href="{{ route('admin.contact-messages.index') }}" class="btn btn-outline" style="width: 100%; margin-top: 8px;">Back to Messages</a>
 

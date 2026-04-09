@@ -7,6 +7,10 @@
     $activeUser = \Illuminate\Support\Facades\Auth::guard('web')->user()
         ?? \Illuminate\Support\Facades\Auth::guard('admin')->user();
     $isAdmin = $activeUser?->role === 'admin';
+    $hasApprovedClaim = $existingClaim && $existingClaim->status === 'approved';
+    $hideFoundReporterDetails = $report->type === 'found' && ! $isAdmin && ! $hasApprovedClaim;
+    $showClaimPrompt = $report->type === 'found' && ! $isAdmin && ! $existingClaim;
+    $claimStatus = $existingClaim?->status;
     [$locationBlock, $locationPlace] = array_pad(explode(' - ', (string) $report->location, 2), 2, '');
     if ($locationPlace === '') {
         $locationPlace = $locationBlock;
@@ -51,6 +55,7 @@
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
                     <span class="badge {{ $report->type === 'lost' ? 'badge-lost' : 'badge-found' }}">{{ $report->type === 'lost' ? 'Lost Item' : 'Found Item' }}</span>
                     <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $report->status }}</span>
+                    <span class="badge badge-neutral">Color: {{ $report->color ?? 'Not specified' }}</span>
                 </div>
                 <h1 style="font-size: 30px; margin-bottom: 8px;">{{ $report->title }}</h1>
                 <p class="section-note" style="margin-bottom: 16px;">Reported on {{ $report->created_at->format('F d, Y') }}</p>
@@ -124,12 +129,34 @@
                 <div><p class="section-note">Place</p><p style="font-weight: 700;">{{ $locationPlace }}</p></div>
                 <div><p class="section-note">Date</p><p style="font-weight: 700;">{{ $report->date?->format('F d, Y') }}</p></div>
                 <div><p class="section-note">Category</p><p style="font-weight: 700;">{{ $report->category }}</p></div>
-                <div><p class="section-note">Reporter</p><p style="font-weight: 700;">{{ $report->is_anonymous && ! $isAdmin ? 'Anonymous' : ($report->reporter_name ?? ($report->user?->name ?? 'Unknown')) }}</p></div>
-                @if ($isAdmin || ! $report->is_anonymous)
-                    <div><p class="section-note">Phone</p><p style="font-weight: 700;">{{ $report->reporter_phone ?? 'Not provided' }}</p></div>
-                    <div><p class="section-note">Email</p><p style="font-weight: 700;">{{ $report->reporter_email ?? 'Not provided' }}</p></div>
+                    <div><p class="section-note">Color</p><p style="font-weight: 700;">{{ $report->color ?? 'Not specified' }}</p></div>
+                @if ($hideFoundReporterDetails)
+                    <div style="padding: 12px; border-radius: 8px; background: #fef3c7; border: 1px solid #fcd34d;">
+                        @if ($showClaimPrompt)
+                            <p style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #b45309;">Claim to View Contact</p>
+                            <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">Submit a claim to unlock the reporter's contact details after admin approval.</p>
+                        @elseif ($claimStatus === 'pending')
+                            <p style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #b45309;">Claim Pending Admin Review</p>
+                            <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">Contact details will appear after admin approves your claim.</p>
+                        @elseif ($claimStatus === 'awaiting_payment')
+                            <p style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #b45309;">Complete Payment to Unlock</p>
+                            <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">Contact details will be visible once you complete the required payment.</p>
+                        @elseif ($claimStatus === 'under_verification')
+                            <p style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #b45309;">Under Final Verification</p>
+                            <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">Contact details will appear after final admin approval.</p>
+                        @else
+                            <p style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #b45309;">Contact Hidden</p>
+                            <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">Only visible after claim is approved by admin.</p>
+                        @endif
+                    </div>
                 @else
-                    <div><p class="section-note">Contact</p><p style="font-weight: 700;">Hidden for anonymous reports</p></div>
+                    <div><p class="section-note">Reporter</p><p style="font-weight: 700;">{{ $report->is_anonymous && ! $isAdmin ? 'Anonymous' : ($report->reporter_name ?? ($report->user?->name ?? 'Unknown')) }}</p></div>
+                    @if ($isAdmin || ! $report->is_anonymous)
+                        <div><p class="section-note">Phone</p><p style="font-weight: 700;">{{ $report->reporter_phone ?? 'Not provided' }}</p></div>
+                        <div><p class="section-note">Email</p><p style="font-weight: 700;">{{ $report->reporter_email ?? 'Not provided' }}</p></div>
+                    @else
+                        <div><p class="section-note">Contact</p><p style="font-weight: 700;">Hidden for anonymous reports</p></div>
+                    @endif
                 @endif
                 @if ($report->report_uid)
                     <div>
@@ -163,7 +190,7 @@
                         <div class="card card-soft" style="padding: 16px;">
                             <p style="font-weight: 800; margin-bottom: 6px;">Claim Submitted</p>
                             <p class="section-note" style="margin-bottom: 10px;">Status: {{ ucfirst($existingClaim->status) }}</p>
-                            <a href="{{ route('claims.index') }}" class="btn btn-outline" style="width: 100%;">View My Claims</a>
+                            <a href="{{ route('claims.index') }}" class="btn btn-outline" style="width: 100%;"><wa-icon name="hand" family="sharp" variant="solid" style="color: rgb(2, 3, 4);"></wa-icon>&nbsp;View My Claims</a>
                         </div>
                     @else
                         <form method="POST" action="{{ route('claims.store', $report) }}" enctype="multipart/form-data">

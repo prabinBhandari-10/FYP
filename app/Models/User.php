@@ -25,6 +25,8 @@ class User extends Authenticatable
         'role',
         'is_blocked',
         'password',
+        'verification_code',
+        'verification_code_expires_at',
     ];
 
     /**

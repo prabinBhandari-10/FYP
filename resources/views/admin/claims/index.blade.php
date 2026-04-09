@@ -23,11 +23,13 @@
             padding: 18px;
             display: grid;
             gap: 12px;
+            overflow-x: auto;
         }
 
         .lf-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 1200px;
         }
 
         .lf-table th,
@@ -38,6 +40,12 @@
             font-size: 13px;
             color: var(--text-gray);
             vertical-align: top;
+        }
+
+        .lf-table th:last-child,
+        .lf-table td:last-child {
+            padding: 12px 8px;
+            min-width: 420px;
         }
 
         .lf-table th {
@@ -61,6 +69,21 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .lf-actions form {
+            margin: 0;
+            display: flex;
+            gap: 6px;
+        }
+
+        .lf-actions form:has(input[type="number"]),
+        .lf-actions form:has(input[type="text"]) {
+            display: grid;
+            gap: 6px;
+            grid-template-columns: auto auto auto auto;
+            align-items: center;
         }
 
         .lf-btn {
@@ -73,6 +96,8 @@
             text-decoration: none;
             transition: background-color 0.2s ease, border-color 0.2s ease;
             font-size: 12px;
+            position: relative;
+            z-index: 1;
         }
 
         .lf-btn:hover {
@@ -120,6 +145,14 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="lf-card">
+                    @foreach ($errors->all() as $error)
+                        <div class="lf-meta" style="color: #b91c1c;">{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
             @if ($claims->count() === 0)
                 <div class="lf-empty">No claims submitted yet.</div>
             @else
@@ -149,8 +182,21 @@
                                     <td>
                                         @if ($claim->status === 'pending' && $claim->held_at)
                                             <span class="lf-badge">On hold</span>
+                                        @elseif ($claim->status === 'awaiting_payment')
+                                            <span class="lf-badge" style="background: #fff7ed; border-color: #fdba74; color: #9a3412;">Awaiting Payment</span>
+                                        @elseif ($claim->status === 'under_verification')
+                                            <span class="lf-badge" style="background: #ecfeff; border-color: #a5f3fc; color: #155e75;">Under Verification</span>
                                         @else
                                             <span class="lf-badge">{{ ucfirst($claim->status) }}</span>
+                                        @endif
+
+                                        @if ($claim->status === 'awaiting_payment')
+                                            <div class="lf-meta" style="margin-top: 6px; font-size: 11px;">
+                                                Amount: NPR {{ number_format(((int) $claim->payment_amount) / 100, 2) }}
+                                            </div>
+                                            <div class="lf-meta" style="margin-top: 4px; font-size: 11px; max-width: 220px;">
+                                                Reason: {{ $claim->payment_reason }}
+                                            </div>
                                         @endif
                                     </td>
                                     <td>
@@ -181,13 +227,40 @@
                                                 <form method="POST" action="{{ route('admin.claims.approve', $claim) }}">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <button class="lf-btn lf-btn-primary" type="submit">Approve</button>
+                                                    <input type="hidden" name="payment_required" value="0">
+                                                    <button class="lf-btn lf-btn-primary" type="submit">Move to Verification</button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('admin.claims.approve', $claim) }}" style="display: grid; gap: 6px;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="payment_required" value="1">
+                                                    <input class="lf-btn" type="number" name="payment_amount" min="1000" step="1" placeholder="Amount in paisa" required>
+                                                    <input class="lf-btn" type="text" name="payment_reason" maxlength="255" placeholder="Reason for payment" required>
+                                                    <button class="lf-btn" type="submit">Require Payment</button>
                                                 </form>
                                                 <form method="POST" action="{{ route('admin.claims.hold', $claim) }}">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button class="lf-btn" type="submit">Hold</button>
                                                 </form>
+                                                <form method="POST" action="{{ route('admin.claims.reject', $claim) }}">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button class="lf-btn" type="submit">Reject</button>
+                                                </form>
+                                            @elseif ($claim->status === 'under_verification')
+                                                <form method="POST" action="{{ route('admin.claims.final-approve', $claim) }}">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button class="lf-btn lf-btn-primary" type="submit">Final Approve</button>
+                                                </form>
+                                                <form method="POST" action="{{ route('admin.claims.reject', $claim) }}">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button class="lf-btn" type="submit">Reject</button>
+                                                </form>
+                                            @elseif ($claim->status === 'awaiting_payment')
                                                 <form method="POST" action="{{ route('admin.claims.reject', $claim) }}">
                                                     @csrf
                                                     @method('PATCH')

@@ -5,7 +5,7 @@
 @section('content')
 <div class="auth-wrap">
     <div class="auth-card">
-        <h1 style="font-size: 32px; margin-bottom: 6px;">Welcome</h1>
+        <h1 style="font-size: 32px; margin-bottom: 6px;">Welcome to Lost & Found</h1>
         <p class="page-subtitle" style="margin-bottom: 20px;">Sign in to manage reports, claims, and updates.</p>
 
         @if (session('success'))

@@ -6,9 +6,9 @@
                 A simple platform to help people report lost items, submit found items, and reconnect belongings safely.
             </p>
             <div class="social-links" aria-label="Social links">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Facebook" aria-label="Facebook">f</a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram" aria-label="Instagram">◎</a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Twitter / X" aria-label="Twitter">x</a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Facebook" aria-label="Facebook"><x-bi-facebook /></a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram" aria-label="Instagram"><x-bi-instagram /></a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Twitter / X" aria-label="Twitter"><x-bi-twitter /></a>
             </div>
         </div>
 
@@ -39,10 +39,6 @@
             <div class="site-footer-col site-footer-updated">
                 <h4>Stay Updated</h4>
                 <p>Get updates about reports, claims, and platform changes.</p>
-                <div class="site-footer-subscribe">
-                    <input type="email" placeholder="Enter your email" aria-label="Email address">
-                    <button type="button" class="btn btn-primary" style="padding: 10px 16px; border-radius: 10px;">Login</button>
-                </div>
             </div>
         </div>
     </div>

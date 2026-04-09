@@ -8,7 +8,10 @@
     <article class="card">
         <div style="display: grid; gap: 16px;">
             <div style="padding-bottom: 16px; border-bottom: 1px solid var(--line);">
-                <h1 style="font-size: 28px; margin: 0 0 8px;">{{ $user->name }}</h1>
+                <h1 style="font-size: 28px; margin: 0 0 8px; display: flex; align-items: center; gap: 10px;">
+                    <wa-icon name="user" variant="regular"></wa-icon>
+                    <span>{{ $user->name }}</span>
+                </h1>
                 <p style="color: var(--text-muted); margin: 0;">{{ $user->email }}</p>
                 <p style="color: var(--text-muted); margin: 4px 0 0; font-size: 13px; text-transform: capitalize;">{{ $user->role }} Account</p>
             </div>
@@ -55,7 +58,7 @@
             <div style="display: grid; gap: 8px;">
                 <a href="{{ route('reports.lost.create') }}" class="btn btn-primary" style="text-align: center; font-size: 13px;">Report Lost Item</a>
                 <a href="{{ route('reports.found.create') }}" class="btn btn-outline" style="text-align: center; font-size: 13px;">Report Found Item</a>
-                <a href="{{ route('claims.index') }}" class="btn btn-ghost" style="text-align: center; font-size: 13px;">View My Claims</a>
+                <a href="{{ route('claims.index') }}" class="btn btn-ghost" style="text-align: center; font-size: 13px;"><wa-icon name="hand" family="sharp" variant="solid" style="color: rgb(2, 3, 4);"></wa-icon>&nbsp;View My Claims</a>
             </div>
         </article>
 
@@ -141,6 +144,40 @@
     </article>
 </section>
 
+<section style="margin-bottom: 20px;">
+    <h2 style="font-size: 24px; margin: 0 0 16px;">My Contact Messages</h2>
+    @if ($myContactMessages->isEmpty())
+        <article class="card card-soft" style="text-align: center; padding: 30px;">
+            <p style="color: var(--text-muted); margin: 0;">You haven't sent any contact messages yet.</p>
+            <a href="{{ route('contact') }}" class="btn btn-primary" style="margin-top: 12px; display: inline-block;">Contact Us</a>
+        </article>
+    @else
+        <div style="display: grid; gap: 12px;">
+            @foreach ($myContactMessages as $message)
+                <article class="card">
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <h3 style="font-size: 17px; margin: 0;">{{ $message->subject }}</h3>
+                            <span class="badge {{ $message->status === 'responded' ? 'badge-found' : ($message->status === 'read' ? 'badge-neutral' : 'badge-lost') }}" style="text-transform: capitalize;">{{ $message->status }}</span>
+                        </div>
+                        <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Sent on {{ $message->created_at->format('M d, Y h:i A') }}</p>
+                        <p style="margin: 0; white-space: pre-wrap; line-height: 1.7; color: var(--text-muted);">{{ $message->message }}</p>
+
+                        @if ($message->admin_response)
+                            <div style="padding: 14px; background: var(--bg-soft); border-radius: 12px; border-left: 4px solid var(--primary);">
+                                <p style="margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--text-main);">Admin Reply</p>
+                                <p style="margin: 0; white-space: pre-wrap; line-height: 1.7; color: var(--text-muted);">{{ $message->admin_response }}</p>
+                            </div>
+                        @else
+                            <p style="margin: 0; font-size: 13px; color: var(--text-muted);">No reply yet.</p>
+                        @endif
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    @endif
+</section>
+
 <!-- My Reports Section -->
 <section style="margin-bottom: 20px;">
     <h2 style="font-size: 24px; margin: 0 0 16px;">My Reports</h2>
@@ -191,7 +228,36 @@
 
 <!-- My Claims Section -->
 <section>
-    <h2 style="font-size: 24px; margin: 0 0 16px;">My Claims</h2>
+
+<script>
+    (function () {
+        if (window.customElements && window.customElements.get('wa-icon')) {
+            return;
+        }
+
+        class WaIconFallback extends HTMLElement {
+            connectedCallback() {
+                const iconName = (this.getAttribute('name') || '').toLowerCase();
+
+                if (iconName !== 'user') {
+                    return;
+                }
+
+                this.setAttribute('aria-hidden', 'true');
+                this.style.display = 'inline-flex';
+                this.style.width = '1em';
+                this.style.height = '1em';
+                this.style.lineHeight = '1';
+                this.style.alignItems = 'center';
+                this.style.justifyContent = 'center';
+                this.innerHTML = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"></circle><path d="M5 20C5 16.134 8.134 13 12 13C15.866 13 19 16.134 19 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>';
+            }
+        }
+
+        window.customElements.define('wa-icon', WaIconFallback);
+    })();
+</script>
+    <h2 style="font-size: 24px; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;"><wa-icon name="hand" family="sharp" variant="solid" style="color: rgb(2, 3, 4);"></wa-icon><span>My Claims</span></h2>
     @if ($myClaims->isEmpty())
         <article class="card card-soft" style="text-align: center; padding: 30px;">
             <p style="color: var(--text-muted); margin: 0;">You haven't made any claims yet.</p>

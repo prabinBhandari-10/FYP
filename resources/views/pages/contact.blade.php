@@ -58,7 +58,7 @@
                 <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Follow Us</h4>
                 <div class="social-links">
                     <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Follow us on Facebook">f</a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Follow us on Instagram">📷</a>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link" title="Follow us on Instagram"><wa-icon name="instagram" family="brands" style="color: rgb(2, 3, 4);"></wa-icon></a>
                     <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" class="social-link" title="Contact us on WhatsApp">💬</a>
                 </div>
             </div>
@@ -74,4 +74,28 @@
         </article>
     </aside>
 </section>
+
+<script>
+    (function () {
+        const instagramSvg = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"></circle><circle cx="17.5" cy="6.5" r="1" fill="currentColor"></circle></svg>';
+
+        const icons = document.querySelectorAll('wa-icon[name="instagram"]');
+        icons.forEach(function (icon) {
+            const hasShadowContent = !!(icon.shadowRoot && icon.shadowRoot.childNodes.length);
+            const hasLightDomContent = (icon.innerHTML || '').trim().length > 0;
+
+            if (hasShadowContent || hasLightDomContent) {
+                return;
+            }
+
+            icon.setAttribute('aria-hidden', 'true');
+            icon.style.display = 'inline-flex';
+            icon.style.width = '1em';
+            icon.style.height = '1em';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.innerHTML = instagramSvg;
+        });
+    })();
+</script>
 @endsection

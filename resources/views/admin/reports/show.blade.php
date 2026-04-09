@@ -46,6 +46,7 @@
                     @endif
                     <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $report->status }}</span>
                     <span class="badge badge-neutral">{{ $report->category }}</span>
+                    <span class="badge badge-neutral">Color: {{ $report->color ?? 'Not specified' }}</span>
                 </div>
                 <p style="font-size: 15px; color: var(--text-gray); line-height: 1.65; white-space: pre-wrap;">{{ $report->description }}</p>
             </div>
@@ -68,6 +69,7 @@
                     <div><strong style="color: var(--text-dark);">Submitted By User:</strong> {{ $report->user?->name ?? 'Unknown' }}</div>
                     <div><strong style="color: var(--text-dark);">User Email:</strong> {{ $report->user?->email ?? '-' }}</div>
                     <div><strong style="color: var(--text-dark);">Location:</strong> {{ $report->location }}</div>
+                    <div><strong style="color: var(--text-dark);">Color:</strong> {{ $report->color ?? 'Not specified' }}</div>
                     <div><strong style="color: var(--text-dark);">Date:</strong> {{ $report->date?->format('F d, Y') }}</div>
                     <div><strong style="color: var(--text-dark);">Coordinates:</strong> {{ $report->latitude ?? '-' }}, {{ $report->longitude ?? '-' }}</div>
                     <div><strong style="color: var(--text-dark);">Created At:</strong> {{ $report->created_at?->format('Y-m-d H:i') }}</div>
