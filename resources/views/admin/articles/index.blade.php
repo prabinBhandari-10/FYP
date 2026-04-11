@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Manage About Content | Admin')
+@section('title', 'Manage Articles | Admin')
 
 @section('content')
 <style>
-    .about-container {
+    .articles-container {
         max-width: 1400px;
         margin: 0 auto;
     }
 
-    .about-header {
+    .articles-header {
         background: white;
         padding: 24px;
         margin-bottom: 24px;
@@ -17,7 +17,7 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    .header-content {
+    .header-flex {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -25,27 +25,27 @@
         gap: 16px;
     }
 
-    .header-content h1 {
+    .header-flex h1 {
         font-size: 28px;
         font-weight: 800;
         color: #2c3e50;
         margin: 0 0 6px 0;
     }
 
-    .header-content p {
+    .header-flex p {
         font-size: 14px;
         color: #6c757d;
         margin: 0;
     }
 
-    .about-content {
+    .articles-content {
         background: white;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         overflow: hidden;
     }
 
-    .success-message {
+    .success-alert {
         background: #d1fae5;
         border-left: 4px solid #10b981;
         padding: 14px 16px;
@@ -53,18 +53,18 @@
         color: #065f46;
     }
 
-    .content-table {
+    .articles-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
     }
 
-    .content-table thead {
+    .articles-table thead {
         background: #f8f9fa;
         border-bottom: 2px solid #dee2e6;
     }
 
-    .content-table th {
+    .articles-table th {
         padding: 14px 16px;
         text-align: left;
         font-weight: 700;
@@ -74,25 +74,18 @@
         letter-spacing: 0.5px;
     }
 
-    .content-table tbody tr {
+    .articles-table tbody tr {
         border-bottom: 1px solid #e9ecef;
         transition: background-color 0.2s ease;
     }
 
-    .content-table tbody tr:hover {
+    .articles-table tbody tr:hover {
         background-color: #f8f9fa;
     }
 
-    .content-table td {
+    .articles-table td {
         padding: 12px 16px;
         vertical-align: middle;
-    }
-
-    .order-cell {
-        text-align: center;
-        font-weight: 700;
-        color: #0066cc;
-        font-size: 16px;
     }
 
     .title-cell {
@@ -101,10 +94,30 @@
         margin-bottom: 4px;
     }
 
-    .preview-cell {
+    .desc-cell {
         font-size: 12px;
         color: #6c757d;
         line-height: 1.4;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-published {
+        background-color: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .status-draft {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #d1d5db;
     }
 
     .date-cell {
@@ -123,7 +136,7 @@
         flex-wrap: wrap;
     }
 
-    .btn-action {
+    .btn-sm {
         padding: 6px 12px;
         font-size: 12px;
         border: 1px solid #dee2e6;
@@ -133,13 +146,10 @@
         font-weight: 500;
         cursor: pointer;
         text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
         transition: all 0.2s ease;
     }
 
-    .btn-action:hover {
+    .btn-sm:hover {
         border-color: #adb5bd;
         background-color: #f8f9fa;
     }
@@ -155,7 +165,7 @@
         border-color: #f5c6cb;
     }
 
-    .table-container {
+    .table-wrapper {
         overflow-x: auto;
     }
 
@@ -165,62 +175,62 @@
         color: #6c757d;
     }
 
-    .empty-state p {
-        margin: 0;
-    }
-
     .pagination-wrapper {
         padding: 20px;
         text-align: center;
     }
 </style>
 
-<div class="about-container">
-    <section class="about-header">
-        <div class="header-content">
+<div class="articles-container">
+    <section class="articles-header">
+        <div class="header-flex">
             <div>
-                <h1>Manage About Content</h1>
-                <p>Create, update, publish, and remove public about page sections.</p>
+                <h1>Manage Articles</h1>
+                <p>Create, update, and manage published news articles.</p>
             </div>
-            <a href="{{ route('admin.about-contents.create') }}" class="btn btn-primary">✨ Create Content</a>
+            <a href="{{ route('admin.articles.create') }}" class="btn btn-primary">✍️ Write Article</a>
         </div>
     </section>
 
-    <section class="about-content">
+    <section class="articles-content">
         @if (session('success'))
-            <div class="success-message">
+            <div class="success-alert">
                 {{ session('success') }}
             </div>
         @endif
 
-        @if ($contents->count())
-            <div class="table-container">
-                <table class="content-table">
+        @if ($articles->count())
+            <div class="table-wrapper">
+                <table class="articles-table">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">Order</th>
-                            <th style="width: 40%;">Title</th>
-                            <th style="width: 120px;">Updated</th>
+                            <th style="width: 45%;">Title</th>
+                            <th style="width: 80px;">Status</th>
+                            <th style="width: 100px;">Updated</th>
                             <th style="width: auto;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($contents as $content)
+                        @foreach ($articles as $article)
                             <tr>
-                                <td class="order-cell">{{ $content->sort_order }}</td>
                                 <td>
-                                    <div class="title-cell">{{ $content->title }}</div>
-                                    <div class="preview-cell">{{ \Illuminate\Support\Str::limit($content->body, 85) }}</div>
+                                    <div class="title-cell">{{ $article->title }}</div>
+                                    <div class="desc-cell">{{ \Illuminate\Support\Str::limit($article->short_description, 80) }}</div>
                                 </td>
-                                <td class="date-cell">{{ $content->updated_at->format('M d, Y') }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ $article->status }}">
+                                        {{ ucfirst($article->status) }}
+                                    </span>
+                                </td>
+                                <td class="date-cell">{{ $article->updated_at->format('M d, Y') }}</td>
                                 <td class="actions-cell">
                                     <div class="btn-group">
-                                        <a href="{{ route('admin.about-contents.show', $content) }}" class="btn-action" title="View">👁 View</a>
-                                        <a href="{{ route('admin.about-contents.edit', $content) }}" class="btn-action" title="Edit">✏️ Edit</a>
-                                        <form method="POST" action="{{ route('admin.about-contents.destroy', $content) }}" style="display: inline;" onsubmit="return confirm('Delete this section?');">
+                                        <a href="{{ route('admin.articles.show', $article) }}" class="btn-sm">👁 View</a>
+                                        <a href="{{ route('admin.articles.edit', $article) }}" class="btn-sm">✏️ Edit</a>
+                                        <form method="POST" action="{{ route('admin.articles.destroy', $article) }}" style="display: inline;" onsubmit="return confirm('Delete this article?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn-action btn-delete" title="Delete">🗑 Delete</button>
+                                            <button type="submit" class="btn-sm btn-delete">🗑 Delete</button>
                                         </form>
                                     </div>
                                 </td>
@@ -230,16 +240,16 @@
                 </table>
             </div>
 
-            @if ($contents->hasPages())
+            @if ($articles->hasPages())
                 <div class="pagination-wrapper">
-                    {{ $contents->links() }}
+                    {{ $articles->links() }}
                 </div>
             @endif
         @else
             <div class="empty-state">
-                <p style="font-size: 16px; margin-bottom: 6px;">📄 No content created yet</p>
-                <p style="font-size: 13px;">Get started by creating your first section.</p>
-                <a href="{{ route('admin.about-contents.create') }}" class="btn btn-primary" style="margin-top: 12px; display: inline-block;">Create Content</a>
+                <p style="font-size: 16px; margin-bottom: 6px;">📝 No articles yet</p>
+                <p style="font-size: 13px;">Start creating published articles for your users.</p>
+                <a href="{{ route('admin.articles.create') }}" class="btn btn-primary" style="margin-top: 12px; display: inline-block;">Write First Article</a>
             </div>
         @endif
     </section>

@@ -36,14 +36,14 @@
     <!-- Activity Sidebar -->
     <aside class="sticky-panel" style="display: grid; gap: 14px;">
         <article class="card card-soft">
-            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">📊 Claim Status</h3>
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Claim Status</h3>
             <div style="display: grid; gap: 8px; font-size: 13px;">
                 <div style="display: flex; justify-content: space-between;">
-                    <span>✓ Approved</span>
+                    <span>Approved</span>
                     <strong style="color: var(--success);">{{ $recentActivity['approved_claims'] }}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span>✕ Rejected</span>
+                    <span>Rejected</span>
                     <strong style="color: var(--danger);">{{ $recentActivity['rejected_claims'] }}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
@@ -54,7 +54,7 @@
         </article>
 
         <article class="card card-soft">
-            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">🔗 Quick Links</h3>
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Quick Links</h3>
             <div style="display: grid; gap: 8px;">
                 <a href="{{ route('reports.lost.create') }}" class="btn btn-primary" style="text-align: center; font-size: 13px;">Report Lost Item</a>
                 <a href="{{ route('reports.found.create') }}" class="btn btn-outline" style="text-align: center; font-size: 13px;">Report Found Item</a>
@@ -63,7 +63,7 @@
         </article>
 
         <article class="card card-soft">
-            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">🔒 Account Security</h3>
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Account Security</h3>
             <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-muted); line-height: 1.6;">
                 Update your password or permanently delete your account.
             </p>
@@ -72,6 +72,28 @@
                 <button type="button" class="btn btn-ghost" style="font-size: 13px; color: var(--danger);" onclick="document.getElementById('deleteAccountSection').scrollIntoView({behavior:'smooth'});">Delete Account</button>
             </div>
         </article>
+
+        @if ($publishedArticles->isNotEmpty())
+            <article class="card card-soft">
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">📰 Latest Articles</h3>
+                <div style="display: grid; gap: 10px;">
+                    @foreach ($publishedArticles as $article)
+                        <div style="border-bottom: 1px solid var(--line); padding-bottom: 10px;">
+                            @if ($loop->last)
+                                <div style="border-bottom: none; padding-bottom: 0;">
+                            @endif
+                            <a href="{{ route('articles.show', $article) }}" style="color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: none; display: block; margin-bottom: 4px; transition: color 0.2s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none';">{{ $article->title }}</a>
+                            <p style="margin: 0 0 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;">{{ \Illuminate\Support\Str::limit($article->short_description, 60) }}</p>
+                            <p style="margin: 0; font-size: 11px; color: #999;">{{ $article->created_at->format('M d, Y') }}</p>
+                            @if ($loop->last)
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                    <a href="{{ route('articles.index') }}" class="btn btn-primary" style="text-align: center; font-size: 12px; margin-top: 6px;">Read All Articles</a>
+                </div>
+            </article>
+        @endif
     </aside>
 </section>
 

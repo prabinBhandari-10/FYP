@@ -225,7 +225,7 @@ class AuthController extends Controller
         }
 
         if (Schema::hasTable('reports')) {
-            $stats['totalReports'] = Report::count();
+            $stats['totalReports'] = Report::where('status', '!=', 'deleted')->count();
 
             if (Schema::hasColumn('reports', 'status')) {
                 $stats['openReports'] = Report::where('status', 'open')->count();
@@ -233,6 +233,7 @@ class AuthController extends Controller
 
             $recentReports = Report::query()
                 ->with('user')
+                ->where('status', '!=', 'deleted')
                 ->latest()
                 ->take(5)
                 ->get();

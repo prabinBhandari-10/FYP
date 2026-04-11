@@ -145,4 +145,134 @@ class PaymentController extends Controller
             ]);
         }
     }
+
+    /**
+     * Show urgent report payment checkout page
+     */
+    public function showUrgentReportPayment(\App\Models\Report $report): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Check if report belongs to user or if user is admin
+        if ($report->user_id !== $user->id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized access to this report');
+        }
+
+        // Check if report payment is already completed
+        if ($report->payment_status === 'completed') {
+            return redirect()
+                ->route('items.show', $report)
+                ->with('info', 'Payment for this report has already been completed.');
+        }
+
+        // Check if report is actually urgent
+        if ($report->urgency !== 'urgent') {
+            return redirect()
+                ->route('items.show', $report)
+                ->with('info', 'This report does not require payment.');
+        }
+
+        return view('payments.urgent-report-checkout', [
+            'report' => $report,
+            'amount' => 100, // NPR 100
+            'publicKey' => config('services.khalti.public_key'),
+        ]);
+    }
+
+    /**
+     * Initiate Khalti payment for urgent report
+     */
+    public function initiateUrgentReportPayment(Request $request, \App\Models\Report $report): \Illuminate\Http\JsonResponse
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Validate authorization
+        if ($report->user_id !== $user->id && $user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($report->payment_status === 'completed') {
+            return response()->json(['error' => 'Payment already completed'], 400);
+        }
+
+        try {
+            $response = $this->khaltiService->initiatePayment([
+                'return_url' => route('payments.urgent-report.verify', $report),
+                'website_url' => config('app.url'),
+                'amount' => 10000, // Amount in paisa (100 NPR = 10000 paisa)
+                'purchase_order_id' => 'report-' . $report->id,
+                'purchase_order_name' => 'Urgent Report - ' . substr($report->title, 0, 50),
+                'customer_info' => [
+                    'name' => (string) $user->name,
+                    'email' => (string) $user->email,
+                ],
+            ]);
+
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Khalti payment initiation failed for urgent report: ' . $e->getMessage());
+
+            return response()->json(
+                ['error' => 'Failed to initiate payment. Please try again.'],
+                500
+            );
+        }
+    }
+
+    /**
+     * Verify Khalti payment after redirect (urgent report)
+     */
+    public function verifyUrgentReportPayment(Request $request, \App\Models\Report $report): RedirectResponse
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Validate authorization
+        if ($report->user_id !== $user->id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized access to this report');
+        }
+
+        $pidx = $request->query('pidx');
+
+        if (!$pidx) {
+            return redirect()
+                ->route('payments.urgent-report', $report)
+                ->with('error', 'Payment verification failed.');
+        }
+
+        try {
+            $paymentDetails = $this->khaltiService->lookupPayment($pidx);
+            $status = strtoupper((string) ($paymentDetails['status'] ?? ''));
+
+            if ($status === 'COMPLETED') {
+                // Update report with payment details
+                $report->update([
+                    'payment_pidx' => $pidx,
+                    'payment_status' => 'completed',
+                ]);
+
+                return redirect()
+                    ->route('items.show', $report)
+                    ->with('success', 'Payment successful! Your report is now featured and visible to all users.');
+            } else {
+                $report->update([
+                    'payment_pidx' => $pidx,
+                    'payment_status' => 'failed',
+                ]);
+
+                return redirect()
+                    ->route('payments.urgent-report', $report)
+                    ->with('error', 'Payment verification failed. Status: ' . ($paymentDetails['status'] ?? 'unknown'));
+            }
+        } catch (\Exception $e) {
+            Log::error('Khalti payment verification failed for urgent report: ' . $e->getMessage());
+
+            $report->update([
+                'payment_status' => 'failed',
+            ]);
+
+            return redirect()
+                ->route('payments.urgent-report', $report)
+                ->with('error', 'Failed to verify payment. Please contact support.');
+        }
+    }
 }

@@ -44,11 +44,14 @@
                     @else
                         <span class="badge badge-found">Found</span>
                     @endif
+                    @if ($report->isUrgent())
+                        <span class="badge" style="background: #fee2e2; color: #c2255c; border: 1px solid #fca5a5; font-weight: 600;">⭐ FEATURED (Urgent)</span>
+                    @endif
                     <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $report->status }}</span>
                     <span class="badge badge-neutral">{{ $report->category }}</span>
                     <span class="badge badge-neutral">Color: {{ $report->color ?? 'Not specified' }}</span>
                 </div>
-                <p style="font-size: 15px; color: var(--text-gray); line-height: 1.65; white-space: pre-wrap;">{{ $report->description }}</p>
+                <div style="font-size: 15px; color: var(--text-gray); line-height: 1.65;"><p>{!! $report->description !!}</p></div>
             </div>
         </div>
 
@@ -73,6 +76,11 @@
                     <div><strong style="color: var(--text-dark);">Date:</strong> {{ $report->date?->format('F d, Y') }}</div>
                     <div><strong style="color: var(--text-dark);">Coordinates:</strong> {{ $report->latitude ?? '-' }}, {{ $report->longitude ?? '-' }}</div>
                     <div><strong style="color: var(--text-dark);">Created At:</strong> {{ $report->created_at?->format('Y-m-d H:i') }}</div>
+                    <div><strong style="color: var(--text-dark);">Urgency Level:</strong> <span style="text-transform: capitalize; font-weight: 600;">{{ $report->urgency ?? 'Normal' }}</span></div>
+                    @if ($report->isUrgent())
+                        <div><strong style="color: var(--text-dark);">Payment Status:</strong> <span style="text-transform: capitalize; font-weight: 600; color: {{ $report->payment_status === 'completed' ? '#16a34a' : ($report->payment_status === 'failed' ? '#b91c1c' : '#d97706') }};">{{ $report->payment_status ?? 'Pending' }}</span></div>
+                        <div><strong style="color: var(--text-dark);">Transaction ID:</strong> {{ $report->payment_pidx ? substr($report->payment_pidx, 0, 20) . '...' : '-' }}</div>
+                    @endif
                 </div>
             </div>
 

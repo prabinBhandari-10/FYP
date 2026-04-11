@@ -88,11 +88,13 @@ class AdminController extends Controller
         if (Schema::hasTable('reports')) {
             $recentReports = Report::query()
                 ->with('user')
+                ->where('status', '!=', 'deleted')
                 ->latest()
                 ->take(8)
                 ->get();
 
             $topCategories = Report::query()
+                ->where('status', '!=', 'deleted')
                 ->select('category', DB::raw('COUNT(*) as total'))
                 ->groupBy('category')
                 ->orderByDesc('total')
@@ -100,6 +102,7 @@ class AdminController extends Controller
                 ->get();
 
             $topLocations = Report::query()
+                ->where('status', '!=', 'deleted')
                 ->select('location', DB::raw('COUNT(*) as total'))
                 ->groupBy('location')
                 ->orderByDesc('total')
@@ -107,6 +110,7 @@ class AdminController extends Controller
                 ->get();
 
             $reportTypeBreakdown = Report::query()
+                ->where('status', '!=', 'deleted')
                 ->select('type', DB::raw('COUNT(*) as total'))
                 ->groupBy('type')
                 ->get();
@@ -251,6 +255,7 @@ class AdminController extends Controller
     {
         $query = Report::query()
             ->with('user')
+            ->where('status', '!=', 'deleted')
             ->latest();
 
         $type = (string) $request->string('type');
@@ -273,6 +278,11 @@ class AdminController extends Controller
             $query->where('status', (string) $request->string('status'));
         }
 
+        $urgency = (string) $request->string('urgency');
+        if (in_array($urgency, ['normal', 'urgent'], true)) {
+            $query->where('urgency', $urgency);
+        }
+
         $reports = $query->paginate(12)->withQueryString();
 
         return view('admin.reports.index', [
@@ -281,6 +291,7 @@ class AdminController extends Controller
                 'q' => (string) $request->string('q'),
                 'type' => $type,
                 'status' => (string) $request->string('status'),
+                'urgency' => $urgency,
             ],
         ]);
     }
@@ -305,7 +316,9 @@ class AdminController extends Controller
 
     public function reportsStore(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->reportRules());
+        $validated = $request->validate($this->reportRules(), [
+            'reporter_phone.regex' => 'Phone number must be exactly 10 digits',
+        ]);
 
         $locationByBlock = [
             'Nepal Block' => [
@@ -396,6 +409,8 @@ class AdminController extends Controller
             'date' => $validated['date'],
             'image' => $imagePath,
             'status' => 'open',
+            'urgency' => $validated['urgency'] ?? 'normal',
+            'payment_status' => $validated['urgency'] === 'urgent' ? 'completed' : 'completed',
         ]);
 
         $this->logAdminAction(
@@ -440,7 +455,9 @@ class AdminController extends Controller
 
     public function reportsUpdate(Request $request, Report $report): RedirectResponse
     {
-        $validated = $request->validate($this->reportRules());
+        $validated = $request->validate($this->reportRules(), [
+            'reporter_phone.regex' => 'Phone number must be exactly 10 digits',
+        ]);
 
         $locationByBlock = [
             'Nepal Block' => [
@@ -549,6 +566,8 @@ class AdminController extends Controller
             'date' => $validated['date'],
             'image' => $imagePath,
             'status' => $validated['status'],
+            'urgency' => $validated['urgency'] ?? 'normal',
+            'payment_status' => $validated['payment_status'] ?? ($validated['urgency'] === 'urgent' ? 'pending' : 'completed'),
         ]);
 
         $this->logAdminAction(
@@ -594,11 +613,8 @@ class AdminController extends Controller
             'reporter_phone',
         ]);
 
-        if ($report->image) {
-            Storage::disk('public')->delete($report->image);
-        }
-
-        $report->delete();
+        // Mark report as deleted instead of permanently deleting
+        $report->update(['status' => 'deleted']);
 
         $this->logAdminAction(
             $request,
@@ -1145,7 +1161,7 @@ class AdminController extends Controller
         return [
             'reporter_name' => ['required', 'string', 'max:255'],
             'reporter_email' => ['required', 'email', 'max:255'],
-            'reporter_phone' => ['required', 'string', 'max:30'],
+            'reporter_phone' => ['required', 'regex:/^\d{10}$/', 'string'],
             'type' => ['required', 'in:lost,found'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
@@ -1159,6 +1175,8 @@ class AdminController extends Controller
             'date' => ['required', 'date'],
             'image' => ['nullable', 'image', 'max:4096'],
             'status' => ['required', 'in:pending,open,closed'],
+            'urgency' => ['required', 'in:normal,urgent'],
+            'payment_status' => ['nullable', 'in:pending,completed,failed'],
         ];
     }
 
@@ -1208,12 +1226,12 @@ class AdminController extends Controller
         }
 
         if (Schema::hasTable('reports')) {
-            $stats['totalReports'] = Report::count();
+            $stats['totalReports'] = Report::where('status', '!=', 'deleted')->count();
             $stats['openReports'] = Report::where('status', 'open')->count();
             $stats['closedReports'] = Report::where('status', 'closed')->count();
-            $stats['lostReports'] = Report::where('type', 'lost')->count();
-            $stats['foundReports'] = Report::where('type', 'found')->count();
-            $stats['reportsToday'] = Report::whereDate('created_at', today())->count();
+            $stats['lostReports'] = Report::where('status', '!=', 'deleted')->where('type', 'lost')->count();
+            $stats['foundReports'] = Report::where('status', '!=', 'deleted')->where('type', 'found')->count();
+            $stats['reportsToday'] = Report::where('status', '!=', 'deleted')->whereDate('created_at', today())->count();
         }
 
         if (Schema::hasTable('claims')) {
@@ -1232,10 +1250,17 @@ class AdminController extends Controller
 
         for ($offset = 6; $offset >= 0; $offset--) {
             $day = Carbon::today()->subDays($offset);
+            $query = $modelClass::whereDate('created_at', $day);
+            
+            // Exclude deleted reports from trend
+            if ($modelClass === Report::class) {
+                $query->where('status', '!=', 'deleted');
+            }
+            
             $trend[] = [
                 'label' => $day->format('D'),
                 'date' => $day->toDateString(),
-                'count' => $modelClass::whereDate('created_at', $day)->count(),
+                'count' => $query->count(),
             ];
         }
 

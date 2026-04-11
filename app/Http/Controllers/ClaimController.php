@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Claim;
 use App\Models\Notification;
 use App\Models\Report;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ClaimController extends Controller
@@ -107,6 +108,28 @@ class ClaimController extends Controller
                 'message' => 'A new claim was submitted for your found item: "' . $report->title . '".',
                 'related_report_id' => $report->id,
                 'related_claim_id' => $claim->id,
+            ]);
+        }
+
+        // Create admin notifications for all admins
+        try {
+            $admins = User::where('role', 'admin')->get();
+            
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'new_claim',
+                    'title' => 'New Claim Submitted',
+                    'message' => "{$request->user()->name} submitted a claim for the found item \"{$report->title}\". Please review and approve/reject it.",
+                    'related_report_id' => $report->id,
+                    'related_claim_id' => $claim->id,
+                    'is_read' => false,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notifications for claim submission.', [
+                'claim_id' => $claim->id,
+                'error' => $e->getMessage(),
             ]);
         }
 

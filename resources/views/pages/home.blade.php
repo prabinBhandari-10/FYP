@@ -45,7 +45,7 @@
                     </a>
                 @else
                     <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; text-decoration: none; color: var(--text-main); font-weight: 600; border-bottom: 1px solid var(--line); transition: background 0.2s ease;" onmouseover="this.style.background='var(--bg-soft)'" onmouseout="this.style.background='transparent'">
-                        <span style="font-size: 18px;">⚙️</span>
+                        <span style="font-size: 18px;"></span>
                         <span>Admin Dashboard</span>
                     </a>
                     <a href="{{ route('reports.lost.create') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; text-decoration: none; color: var(--text-main); font-weight: 600; border-bottom: 1px solid var(--line); transition: background 0.2s ease;" onmouseover="this.style.background='var(--bg-soft)'" onmouseout="this.style.background='transparent'">
@@ -174,9 +174,12 @@
                                 @endif
                                 <div style="padding: 12px; flex: 1; display: flex; flex-direction: column;">
                                     <h3 style="font-size: 14px; margin: 0 0 4px; color: var(--text-main); font-weight: 700; line-height: 1.3;">{{ $report->title }}</h3>
-                                    <p style="margin: 0 0 6px; font-size: 12px; color: var(--text-muted);">
+                                    <p style="margin: 0 0 6px; font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; flex-wrap: wrap;">
                                         <span class="badge" style="text-transform: capitalize;">{{ $report->type }}</span>
-                                        <span style="margin-left: 6px;">{{ $report->category }}</span>
+                                        @if ($report->isUrgent())
+                                            <span class="badge" style="background: #fee2e2; color: #c2255c; border: 1px solid #fca5a5; font-weight: 600; font-size: 10px;">⭐ FEATURED</span>
+                                        @endif
+                                        <span style="margin-left: 0;">{{ $report->category }}</span>
                                     </p>
                                     <p style="margin: 0; font-size: 11px; color: var(--text-soft);">{{ \Illuminate\Support\Str::limit($report->location, 35) }}</p>
                                 </div>
@@ -220,13 +223,37 @@
                 </article>
 
                 <article class="card card-soft">
-                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);"> Quick Actions</h3>
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Quick Actions</h3>
                     <div style="display: grid; gap: 8px;">
                         <a href="{{ route('profile') }}" class="btn btn-primary" style="font-size: 13px; justify-content: center;">My Profile</a>
                         <a href="{{ route('claims.index') }}" class="btn btn-outline" style="font-size: 13px; justify-content: center;"><wa-icon name="hand" family="sharp" variant="thin" style="color: rgb(2, 3, 4);"></wa-icon>&nbsp;My Claims</a>
                         <a href="{{ route('items.index') }}" class="btn btn-ghost" style="font-size: 13px; justify-content: center;">Browse All</a>
                     </div>
                 </article>
+
+                @php
+                    $publishedArticles = \App\Models\Article::where('status', 'published')
+                        ->latest()
+                        ->limit(1)
+                        ->get();
+                @endphp
+
+                @if ($publishedArticles->isNotEmpty())
+                    <article class="card card-soft">
+                        <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Latest Articles</h3>
+                        <div style="display: grid; gap: 10px;">
+                            @foreach ($publishedArticles as $article)
+                                <div>
+                                    <a href="{{ route('articles.show', $article) }}" style="color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: none; display: block; margin-bottom: 4px; transition: color 0.2s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none';">{{ \Illuminate\Support\Str::limit($article->title, 45) }}</a>
+                                    <p style="margin: 0 0 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;">{{ \Illuminate\Support\Str::limit($article->short_description ?? $article->content, 60) }}</p>
+                                    <p style="margin: 0; font-size: 11px; color: #999;">{{ $article->created_at->format('M d, Y') }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                        <a href="{{ route('articles.index') }}" class="btn btn-primary" style="text-align: center; font-size: 12px; margin-top: 10px; width: 100%;">View All Articles</a>
+                    </article>
+                @endif
+
             @else
                 <article class="card card-soft">
                     <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Platform Stats</h3>
@@ -252,11 +279,25 @@
                 </article>
 
                 <article class="card card-soft">
-                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">⚙️ Admin Tools</h3>
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Admin Tools</h3>
                     <div style="display: grid; gap: 8px;">
                         <a href="{{ route('admin.reports.index') }}" class="btn btn-primary" style="font-size: 13px; justify-content: center;">Reports</a>
                         <a href="{{ route('admin.claims.index') }}" class="btn btn-outline" style="font-size: 13px; justify-content: center;">Claims</a>
                         <a href="{{ route('admin.users.index') }}" class="btn btn-ghost" style="font-size: 13px; justify-content: center;">Users</a>
+                    </div>
+                </article>
+
+                <article class="card card-soft">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                        <span>📝</span>
+                        <span>Publish Articles</span>
+                    </h3>
+                    <p style="margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: var(--text-muted);">
+                        Manage and publish news, announcements, and articles for the community.
+                    </p>
+                    <div style="display: grid; gap: 8px;">
+                        <a href="{{ route('admin.articles.create') }}" class="btn btn-primary" style="font-size: 13px; justify-content: center;">Add Article</a>
+                        <a href="{{ route('admin.articles.index') }}" class="btn btn-outline" style="font-size: 13px; justify-content: center;">Manage Articles</a>
                     </div>
                 </article>
             @endif
@@ -273,12 +314,35 @@
             </article>
 
             <article class="card card-soft">
-                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">ℹ️ About lost and found</h3>
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">About lost and found</h3>
                 <p style="margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-muted);">
                     Lost & Found helps you find lost items and report found items in your area securely.
                 </p>
                 <a href="{{ route('about') }}" style="display: block; margin-top: 10px; color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: none;">Learn more →</a>
             </article>
+
+            @php
+                $publishedArticles = \App\Models\Article::where('status', 'published')
+                    ->latest()
+                    ->limit(3)
+                    ->get();
+            @endphp
+
+            @if ($publishedArticles->isNotEmpty())
+                <article class="card card-soft">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);">Latest Articles</h3>
+                    <div style="display: grid; gap: 10px;">
+                        @foreach ($publishedArticles as $article)
+                            <div style="padding-bottom: 10px; @if (!$loop->last) border-bottom: 1px solid var(--line); @endif">
+                                <a href="{{ route('articles.show', $article) }}" style="color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: none; display: block; margin-bottom: 4px; transition: color 0.2s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none';">{{ \Illuminate\Support\Str::limit($article->title, 45) }}</a>
+                                <p style="margin: 0 0 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;">{{ \Illuminate\Support\Str::limit($article->short_description ?? $article->content, 60) }}</p>
+                                <p style="margin: 0; font-size: 11px; color: #999;">{{ $article->created_at->format('M d, Y') }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                    <a href="{{ route('articles.index') }}" class="btn btn-primary" style="text-align: center; font-size: 12px; margin-top: 10px; width: 100%;">View All Articles</a>
+                </article>
+            @endif
         @endif
     </aside>
 </div>

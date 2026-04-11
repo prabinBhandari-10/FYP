@@ -22,6 +22,7 @@
             <a class="btn btn-outline" href="{{ route('admin.claims.index') }}">Manage Claims</a>
             <a class="btn btn-outline" href="{{ route('reports.track.form') }}">Track Report</a>
             <a class="btn btn-outline" href="{{ route('admin.about-contents.index') }}">About Page</a>
+            <a class="btn btn-outline" href="{{ route('admin.articles.index') }}">Articles</a>
             <a class="btn btn-outline" href="{{ route('admin.contact-messages.index') }}">Contact Page</a>
         </div>
     </div>

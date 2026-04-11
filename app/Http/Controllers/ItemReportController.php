@@ -233,7 +233,7 @@ class ItemReportController extends Controller
         $validated = $request->validate([
             'reporter_name' => ['required', 'string', 'max:255'],
             'reporter_email' => ['required', 'string', 'email', 'max:255'],
-            'reporter_phone' => ['required', 'string', 'max:30'],
+            'reporter_phone' => ['required', 'regex:/^\d{10}$/', 'string'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'color' => ['required', 'string', 'max:50'],
@@ -248,6 +248,8 @@ class ItemReportController extends Controller
             'images' => ['nullable', 'array', 'max:5'],
             'images.*' => ['nullable', 'image', 'max:4096'],
             'is_anonymous' => ['nullable', 'boolean'],
+        ], [
+            'reporter_phone.regex' => 'Phone number must be exactly 10 digits',
         ]);
 
         if ($validated['block'] === 'Pokhara') {
@@ -298,6 +300,8 @@ class ItemReportController extends Controller
             'image' => $imagePath,
             'status' => $request->user()->role === 'admin' ? 'open' : 'pending',
             'is_anonymous' => $validated['is_anonymous'] ?? false,
+            'urgency' => 'normal',
+            'payment_status' => 'completed',
         ]);
 
         // Handle multiple images if provided
@@ -328,10 +332,155 @@ class ItemReportController extends Controller
 
         return redirect()
             ->route('items.show', $report)
-            ->with('success', $report->status === 'pending'
-                ? 'Item report submitted successfully. UID: ' . $report->report_uid . '. It is pending admin approval before public visibility.'
-                : 'Item report submitted successfully. UID: ' . $report->report_uid . '. We found possible matches below.')
-            ->with('show_matches', true);
+            ->with('success', 'Your report has been submitted successfully');
+    }
+
+    public function editReport(Report $report)
+    {
+        // Check if user owns the report
+        if (auth()->id() !== $report->user_id) {
+            abort(403, 'You cannot edit this report.');
+        }
+
+        // Only allow editing if report is still pending (not approved)
+        if ($report->status !== 'pending') {
+            abort(403, 'You can only edit reports that are awaiting admin approval.');
+        }
+
+        return view('reports.edit', [
+            'report' => $report,
+            'submitRoute' => route('reports.' . $report->type . '.update', $report),
+            'submitLabel' => 'Update Report',
+        ]);
+    }
+
+    public function updateReport(Request $request, Report $report)
+    {
+        // Check if user owns the report
+        if (auth()->id() !== $report->user_id) {
+            abort(403, 'You cannot edit this report.');
+        }
+
+        // Only allow editing if report is still pending (not approved)
+        if ($report->status !== 'pending') {
+            abort(403, 'You can only edit reports that are awaiting admin approval.');
+        }
+
+        $locationByBlock = [
+            'Nepal Block' => [
+                'Annapurna',
+                'Machapuchhre',
+                'Begnas',
+                'Rupa',
+                'Rara',
+                'Tilicho',
+                'Nilgiri',
+                'Kapuche',
+                'Canteen',
+                'Library',
+                'Parking Area',
+                'Basketball Court',
+                'Table Tennis Board',
+            ],
+            'UK Block' => [
+                'Parking Area',
+                'Table Tennis Board',
+                'Open Access Lab',
+                'Stonehenge',
+                'Big Ben',
+                'kingstone'
+            ],
+            'Pokhara City' => [
+                'Lakeside',
+                'Mahendrapool',
+                'Prithvi Chowk',
+                'Chipledhunga',
+                'New Road',
+                'Bagar',
+                'Bindhyabasini',
+                'Phewa Lake',
+                'Talchowk',
+                'Miyapatan',
+                'Batulechaur',
+                'Hemja',
+                'Srijanachowk',
+                'Nayabazar',
+                'Rambazar',
+            ],
+            'Unknown' => [],
+        ];
+
+        $validated = $request->validate([
+            'reporter_name' => ['required', 'string', 'max:255'],
+            'reporter_email' => ['required', 'string', 'email', 'max:255'],
+            'reporter_phone' => ['required', 'regex:/^\d{10}$/', 'string'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'color' => ['required', 'string', 'max:50'],
+            'category' => ['required', 'string', 'max:100'],
+            'block' => ['required', 'string', 'in:Nepal Block,UK Block,Pokhara City,Pokhara,Unknown'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'location_note' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'date' => ['required', 'date'],
+            'image' => ['nullable', 'image', 'max:4096'],
+            'is_anonymous' => ['nullable', 'boolean'],
+        ], [
+            'reporter_phone.regex' => 'Phone number must be exactly 10 digits',
+        ]);
+
+        if ($validated['block'] === 'Pokhara') {
+            $validated['block'] = 'Pokhara City';
+        }
+
+        $selectedLocation = trim((string) ($validated['location'] ?? ''));
+        $locationNote = trim((string) ($validated['location_note'] ?? ''));
+        $validLocations = $locationByBlock[$validated['block']] ?? [];
+
+        $resolvedLocation = null;
+
+        if ($selectedLocation !== '' && in_array($selectedLocation, $validLocations, true)) {
+            $resolvedLocation = $selectedLocation;
+        } elseif ($locationNote !== '') {
+            $resolvedLocation = $locationNote;
+        }
+
+        if ($resolvedLocation === null) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'location' => 'Select an exact location or provide an approximate location note.',
+                ]);
+        }
+
+        $imagePath = $report->image;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('reports', 'public');
+            if ($report->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($report->image);
+            }
+        }
+
+        $report->update([
+            'reporter_name' => $validated['reporter_name'],
+            'reporter_email' => $validated['reporter_email'],
+            'reporter_phone' => $validated['reporter_phone'],
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'color' => $validated['color'],
+            'category' => $validated['category'],
+            'location' => $validated['block'] . ' - ' . $resolvedLocation,
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'date' => $validated['date'],
+            'image' => $imagePath,
+            'is_anonymous' => $validated['is_anonymous'] ?? false,
+        ]);
+
+        return redirect()
+            ->route('items.show', $report)
+            ->with('success', 'Report updated successfully! Awaiting admin approval.');
     }
 
     public function storeSighting(Request $request, Report $report)

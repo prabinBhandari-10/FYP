@@ -807,6 +807,9 @@
             }
         }
     </style>
+
+    <!-- Quill Rich Text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
     @php
@@ -951,6 +954,41 @@
 
             sessionStorage.setItem(key, '1');
             window.setTimeout(closeWelcomeToast, 3600);
+        });
+    </script>
+
+    <!-- Quill Rich Text Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Initialize Quill editors
+        document.addEventListener('DOMContentLoaded', function() {
+            const editorElements = document.querySelectorAll('[data-quill-editor]');
+            editorElements.forEach(element => {
+                const hiddenInput = element.nextElementSibling;
+                const toolbar = element.dataset.quillToolbar || '#toolbar';
+                
+                const quill = new Quill(element, {
+                    theme: 'snow',
+                    placeholder: element.dataset.quillPlaceholder || 'Enter content here...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'color': [] }],
+                            [{ 'background': [] }]
+                        ]
+                    }
+                });
+
+                // Sync content with hidden input
+                quill.on('text-change', function() {
+                    hiddenInput.value = quill.root.innerHTML;
+                });
+
+                // Load existing content if available
+                if (hiddenInput.value) {
+                    quill.root.innerHTML = hiddenInput.value;
+                }
+            });
         });
     </script>
 </body>

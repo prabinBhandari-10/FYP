@@ -22,27 +22,27 @@
             </div>
         @endif
 
-        <form action="{{ route('register.store') }}" method="POST">
+        <form action="{{ route('register.store') }}" method="POST" autocomplete="off">
             @csrf
 
             <div class="form-group">
                 <label class="form-label" for="name">Full Name</label>
-                <input class="form-input" type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Your full name" required autofocus>
+                <input class="form-input" type="text" id="name" name="name" value="{{ $errors->any() ? old('name') : '' }}" placeholder="Your full name" required autocomplete="off">
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input class="form-input" type="email" id="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required>
+                <input class="form-input" type="email" id="email" name="email" value="{{ $errors->any() ? old('email') : '' }}" placeholder="you@example.com" required autocomplete="off">
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input class="form-input" type="password" id="password" name="password" placeholder="Create a password" required>
+                <input class="form-input" type="password" id="password" name="password" placeholder="Create a password" required autocomplete="new-password">
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password_confirmation">Confirm Password</label>
-                <input class="form-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="Repeat your password" required>
+                <input class="form-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="Repeat your password" required autocomplete="new-password">
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
@@ -54,4 +54,32 @@
         </p>
     </div>
 </div>
+
+@if (!$errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const nameField = document.getElementById('name');
+        const emailField = document.getElementById('email');
+        const passwordField = document.getElementById('password');
+        const confirmField = document.getElementById('password_confirmation');
+        
+        // Clear form immediately
+        form.reset();
+        nameField.value = '';
+        emailField.value = '';
+        passwordField.value = '';
+        confirmField.value = '';
+        
+        // Clear again after small delay to prevent browser autofill
+        setTimeout(function() {
+            nameField.value = '';
+            emailField.value = '';
+            passwordField.value = '';
+            confirmField.value = '';
+        }, 100);
+    });
+</script>
+@endif
+
 @endsection

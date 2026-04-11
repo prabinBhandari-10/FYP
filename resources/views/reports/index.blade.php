@@ -49,7 +49,12 @@
                     @endif
 
                     <div style="padding: 16px; display: grid; gap: 8px;">
-                        <span class="badge {{ $report->type === 'lost' ? 'badge-lost' : 'badge-found' }}" style="width: fit-content;">{{ strtoupper($report->type) }}</span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
+                            <span class="badge {{ $report->type === 'lost' ? 'badge-lost' : 'badge-found' }}" style="width: fit-content;">{{ strtoupper($report->type) }}</span>
+                            @if ($report->isUrgent())
+                                <span class="badge" style="background: #fee2e2; color: #c2255c; border: 1px solid #fca5a5; font-weight: 600; width: fit-content;">🔴 URGENT</span>
+                            @endif
+                        </div>
                         <h3 style="font-size: 19px;">{{ $report->title }}</h3>
                         <p class="section-note">{{ $report->location }}</p>
                         <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Color: <strong>{{ $report->color ?? 'Not specified' }}</strong></p>

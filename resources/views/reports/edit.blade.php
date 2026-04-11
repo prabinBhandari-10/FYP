@@ -1,30 +1,32 @@
 @extends('layouts.app')
 
-@section('title', ($title ?? 'Report Item') . ' | Lost & Found')
+@section('title', 'Edit Report | Lost & Found')
 
 @section('content')
 <section style="margin-bottom: 16px;">
-    <h1 class="page-title" style="margin-bottom: 8px;">{{ $title ?? 'Report Item' }}</h1>
-    <p class="page-subtitle">Submit details clearly so the community can help reconnect items quickly and safely.</p>
+    <a href="{{ route('items.show', $report) }}" class="btn btn-ghost" style="padding-left: 0;">Back to Report</a>
+    <h1 class="page-title" style="margin-bottom: 8px;">Edit {{ ucfirst($report->type) }} Report</h1>
+    <p class="page-subtitle">You can edit this report until an admin has verified it. Once approved, you will no longer be able to make changes.</p>
 </section>
 
 <section class="split-layout" style="margin-bottom: 18px;">
     <article class="card">
-        <form method="POST" action="{{ $submitRoute ?? '' }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('reports.' . $report->type . '.update', $report) }}" enctype="multipart/form-data">
             @csrf
+            @method('PATCH')
 
             <h2 style="font-size: 22px; margin-bottom: 14px;">Reporter Contact</h2>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="reporter_name">Full Name</label>
-                    <input class="form-input" type="text" id="reporter_name" name="reporter_name" value="{{ old('reporter_name', auth()->user()?->name) }}" placeholder="Your full name" required>
+                    <input class="form-input" type="text" id="reporter_name" name="reporter_name" value="{{ old('reporter_name', $report->reporter_name) }}" placeholder="Your full name" required>
                     @error('reporter_name')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="reporter_phone">Phone Number</label>
-                    <input class="form-input" type="tel" id="reporter_phone" name="reporter_phone" value="{{ old('reporter_phone') }}" placeholder="98XXXXXXXX" pattern="\d{10}" maxlength="10" inputmode="numeric" required oninput="this.value = this.value.replace(/[^\d]/g, '');">
+                    <input class="form-input" type="tel" id="reporter_phone" name="reporter_phone" value="{{ old('reporter_phone', $report->reporter_phone) }}" placeholder="98XXXXXXXX" pattern="\d{10}" maxlength="10" inputmode="numeric" required oninput="this.value = this.value.replace(/[^\d]/g, '');">
                     <div style="font-size: 12px; color: #6c757d; margin-top: 6px;">Must be a 10-digit phone number</div>
                     @error('reporter_phone')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
@@ -32,7 +34,7 @@
 
             <div class="form-group">
                 <label class="form-label" for="reporter_email">Email Address</label>
-                <input class="form-input" type="email" id="reporter_email" name="reporter_email" value="{{ old('reporter_email', auth()->user()?->email) }}" placeholder="you@example.com" required>
+                <input class="form-input" type="email" id="reporter_email" name="reporter_email" value="{{ old('reporter_email', $report->reporter_email) }}" placeholder="you@example.com" required>
                 @error('reporter_email')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
             </div>
 
@@ -42,7 +44,8 @@
 
             <div class="form-group">
                 <label class="form-label" for="title">Title</label>
-                <input class="form-input" type="text" id="title" name="title" value="{{ old('title') }}" placeholder="e.g. Black Wallet, Silver Keys" required>
+                <input class="form-input" type="text" id="title" name="title" value="{{ old('title', $report->title) }}" placeholder="e.g. Black Wallet, Silver Keys" required>
+                @error('title')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
             </div>
 
             <div class="form-group">
@@ -53,7 +56,7 @@
                         $colors = ['Black', 'White', 'Blue', 'Red', 'Green', 'Yellow', 'Pink', 'Purple', 'Brown', 'Gray', 'Silver', 'Gold', 'Multicolor', 'Other'];
                     @endphp
                     @foreach ($colors as $color)
-                        <option value="{{ $color }}" @selected(old('color') === $color)>{{ $color }}</option>
+                        <option value="{{ $color }}" @selected(old('color', $report->color) === $color)>{{ $color }}</option>
                     @endforeach
                 </select>
                 @error('color')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
@@ -62,20 +65,8 @@
             <div class="form-group">
                 <label class="form-label" for="description">Description</label>
                 <style>
-                    .ql-container {
-                        font-size: 14px;
-                        font-family: inherit;
-                    }
-                    .ql-editor {
-                        min-height: 250px;
-                        max-height: 400px;
-                        padding: 12px;
-                        border-radius: 6px;
-                        line-height: 1.6;
-                    }
                     .ql-toolbar.ql-snow {
                         border: 1px solid #dee2e6;
-                        border-bottom: none;
                         border-radius: 6px 6px 0 0;
                         background: #f8f9fa;
                     }
@@ -85,7 +76,7 @@
                     }
                 </style>
                 <div id="description" data-quill-editor data-quill-placeholder="Add clear identifying details and context..."></div>
-                <input type="hidden" name="description" id="description-input" value="{{ old('description') }}" required>
+                <input type="hidden" name="description" id="description-input" value="{{ old('description', $report->description) }}" required>
                 @error('description')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
             </div>
 
@@ -98,19 +89,20 @@
                             $cats = ['Electronics', 'Documents/IDs', 'Keys', 'Clothing', 'Accessories', 'Bags/Wallets', 'Books/Stationery', 'Other'];
                         @endphp
                         @foreach ($cats as $cat)
-                            <option value="{{ $cat }}" @selected(old('category') === $cat)>{{ $cat }}</option>
+                            <option value="{{ $cat }}" @selected(old('category', $report->category) === $cat)>{{ $cat }}</option>
                         @endforeach
                     </select>
+                    @error('category')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="block">Location</label>
                     <select class="form-select" id="block" name="block" required>
                         <option value="">Select location</option>
-                        <option value="Nepal Block" @selected(old('block') === 'Nepal Block')>Nepal Block (Inside College)</option>
-                        <option value="UK Block" @selected(old('block') === 'UK Block')>UK Block (Inside College)</option>
-                        <option value="Pokhara City" @selected(old('block') === 'Pokhara City' || old('block') === 'Pokhara')>Pokhara City (Outside College)</option>
-                        <option value="Unknown" @selected(old('block') === 'Unknown')>Unknown</option>
+                        <option value="Nepal Block" @selected(old('block', $report->block ?? '') === 'Nepal Block')>Nepal Block (Inside College)</option>
+                        <option value="UK Block" @selected(old('block', $report->block ?? '') === 'UK Block')>UK Block (Inside College)</option>
+                        <option value="Pokhara City" @selected(old('block', $report->block ?? '') === 'Pokhara City' || old('block', $report->block ?? '') === 'Pokhara')>Pokhara City (Outside College)</option>
+                        <option value="Unknown" @selected(old('block', $report->block ?? '') === 'Unknown')>Unknown</option>
                     </select>
                     @error('block')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
@@ -119,7 +111,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="location">Exact Location</label>
-                    <select class="form-select" id="location" name="location" data-old-location="{{ old('location') }}">
+                    <select class="form-select" id="location" name="location" data-old-location="{{ old('location', $report->location ?? '') }}">
                         <option value="">Select location</option>
                     </select>
                     @error('location')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
@@ -143,8 +135,8 @@
                     <button type="button" id="use-current-location" class="btn btn-outline">Use My Current Location</button>
                     <span id="map-coords-text" class="section-note">No pin selected yet.</span>
                 </div>
-                <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
-                <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $report->latitude) }}">
+                <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $report->longitude) }}">
                 @error('latitude')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 @error('longitude')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
             </div>
@@ -152,50 +144,63 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="date">Date</label>
-                    <input class="form-input" type="date" id="date" name="date" value="{{ old('date', date('Y-m-d')) }}" required>
+                    <input class="form-input" type="date" id="date" name="date" value="{{ old('date', $report->date?->format('Y-m-d')) }}" required>
+                    @error('date')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="image">Primary Image (optional)</label>
                     <input class="form-input" type="file" id="image" name="image" accept="image/*">
+                    @if ($report->image)
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--text-gray);">Current image: {{ $report->image }}</div>
+                    @endif
                     @error('image')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="images">Additional Images (up to 5 more)</label>
-                <input class="form-input" type="file" id="images" name="images[]" accept="image/*" multiple max="5">
-                <p class="section-note" style="margin-top: 6px;">Upload additional photos to help in identifying the item.</p>
-                @error('images')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
-            </div>
-
             <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-soft); padding: 14px 16px; border-radius: 12px; margin: 18px 0;">
-                <input type="checkbox" id="is_anonymous" name="is_anonymous" value="1" @checked(old('is_anonymous')) style="width: 18px; height: 18px; cursor: pointer;">
+                <input type="checkbox" id="is_anonymous" name="is_anonymous" value="1" @checked(old('is_anonymous', $report->is_anonymous)) style="width: 18px; height: 18px; cursor: pointer;">
                 <label for="is_anonymous" style="cursor: pointer; margin: 0; font-size: 14px; font-weight: 600;">Report anonymously (your name won't be visible publicly)</label>
             </div>
 
-
-
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Submit Report</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Update Report</button>
         </form>
     </article>
 
     <aside class="sticky-panel" style="display: grid; gap: 14px;">
+        <article class="card card-soft">
+            <h3 style="font-size: 20px; margin-bottom: 8px;">Edit Information</h3>
+            <p style="font-size: 14px; line-height: 1.7; color: var(--text-muted); margin: 0;">
+                You can edit this report while it's awaiting admin approval. Once the admin verifies your report, you will no longer be able to make changes. Make sure all details are accurate before clicking update.
+            </p>
+        </article>
+
         <article class="card card-soft">
             <h3 style="font-size: 20px; margin-bottom: 8px;">Submission Tips</h3>
             <ul style="padding-left: 18px; color: var(--text-muted); font-size: 14px; line-height: 1.7; display: grid; gap: 4px;">
                 <li>Use a clear title with color and type.</li>
                 <li>Mention distinguishing marks in description.</li>
                 <li>Add approximate location if exact place is unknown.</li>
-                <li>Upload image if available for easier matching.</li>
+                <li>Update image if you have a better photo.</li>
             </ul>
         </article>
 
         <article class="card card-soft">
-            <h3 style="font-size: 20px; margin-bottom: 8px;">How Claims Work</h3>
-            <p class="section-note" style="line-height: 1.7;">
-                Found items can be claimed after ownership verification. Clear and accurate details improve successful matching.
-            </p>
+            <h3 style="font-size: 20px; margin-bottom: 8px;">Report Status</h3>
+            <div style="display: grid; gap: 8px; font-size: 14px;">
+                <div>
+                    <span style="color: var(--text-muted); font-size: 12px;">Current Status:</span>
+                    <p style="margin: 4px 0 0; font-weight: 700; text-transform: capitalize;">{{ $report->status }}</p>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); font-size: 12px;">Report UID:</span>
+                    <p style="margin: 4px 0 0; font-weight: 700;">{{ $report->report_uid }}</p>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); font-size: 12px;">Created:</span>
+                    <p style="margin: 4px 0 0; font-weight: 700;">{{ $report->created_at->format('M d, Y') }}</p>
+                </div>
+            </div>
         </article>
     </aside>
 </section>
@@ -369,4 +374,5 @@
         });
     })();
 </script>
+
 @endsection

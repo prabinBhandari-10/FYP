@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\ItemReportController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\Admin\AboutContentController as AdminAboutContentController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
@@ -72,6 +74,9 @@ Route::get('/track-report/{reportUid}', [ItemReportController::class, 'trackShow
 Route::get('/items', [ItemReportController::class, 'index'])->name('items.index');
 Route::get('/items/{report}', [ItemReportController::class, 'show'])->name('items.show');
 
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
@@ -106,9 +111,13 @@ Route::middleware(['auth:web', 'user'])->group(function () {
 
     Route::get('/reports/lost/create', [ItemReportController::class, 'createLost'])->name('reports.lost.create');
     Route::post('/reports/lost', [ItemReportController::class, 'storeLost'])->name('reports.lost.store');
+    Route::get('/reports/lost/{report}/edit', [ItemReportController::class, 'editReport'])->name('reports.lost.edit');
+    Route::patch('/reports/lost/{report}', [ItemReportController::class, 'updateReport'])->name('reports.lost.update');
 
     Route::get('/reports/found/create', [ItemReportController::class, 'createFound'])->name('reports.found.create');
     Route::post('/reports/found', [ItemReportController::class, 'storeFound'])->name('reports.found.store');
+    Route::get('/reports/found/{report}/edit', [ItemReportController::class, 'editReport'])->name('reports.found.edit');
+    Route::patch('/reports/found/{report}', [ItemReportController::class, 'updateReport'])->name('reports.found.update');
     Route::patch('/items/{report}/mark-found', [ItemReportController::class, 'markAsFound'])->name('reports.mark-found');
 
     Route::post('/items/{report}/sightings', [ItemReportController::class, 'storeSighting'])->name('sightings.store');
@@ -118,6 +127,11 @@ Route::middleware(['auth:web', 'user'])->group(function () {
     Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');
     Route::post('/claims/{claim}/payment/initiate', [PaymentController::class, 'initiate'])->name('payment.initiate');
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+    // Urgent Report Payment Routes
+    Route::get('/reports/{report}/payment', [PaymentController::class, 'showUrgentReportPayment'])->name('payments.urgent-report');
+    Route::post('/reports/{report}/payment/initiate', [PaymentController::class, 'initiateUrgentReportPayment'])->name('payments.urgent-report.initiate');
+    Route::get('/reports/{report}/payment/verify', [PaymentController::class, 'verifyUrgentReportPayment'])->name('payments.urgent-report.verify');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
@@ -173,6 +187,14 @@ Route::middleware(['auth:admin', 'admin'])->group(function () {
     Route::get('/admin/about-content/{content}/edit', [AdminAboutContentController::class, 'edit'])->name('admin.about-contents.edit');
     Route::put('/admin/about-content/{content}', [AdminAboutContentController::class, 'update'])->name('admin.about-contents.update');
     Route::delete('/admin/about-content/{content}', [AdminAboutContentController::class, 'destroy'])->name('admin.about-contents.destroy');
+
+    Route::get('/admin/articles', [AdminArticleController::class, 'index'])->name('admin.articles.index');
+    Route::get('/admin/articles/create', [AdminArticleController::class, 'create'])->name('admin.articles.create');
+    Route::post('/admin/articles', [AdminArticleController::class, 'store'])->name('admin.articles.store');
+    Route::get('/admin/articles/{article}', [AdminArticleController::class, 'show'])->name('admin.articles.show');
+    Route::get('/admin/articles/{article}/edit', [AdminArticleController::class, 'edit'])->name('admin.articles.edit');
+    Route::put('/admin/articles/{article}', [AdminArticleController::class, 'update'])->name('admin.articles.update');
+    Route::delete('/admin/articles/{article}', [AdminArticleController::class, 'destroy'])->name('admin.articles.destroy');
 
     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });

@@ -27,7 +27,8 @@
 
                 <div class="form-group">
                     <label class="form-label" for="reporter_phone">Reporter Phone</label>
-                    <input class="form-input" id="reporter_phone" name="reporter_phone" type="text" required value="{{ old('reporter_phone', $report->reporter_phone) }}">
+                    <input class="form-input" id="reporter_phone" name="reporter_phone" type="tel" pattern="\d{10}" maxlength="10" inputmode="numeric" required value="{{ old('reporter_phone', $report->reporter_phone) }}" oninput="this.value = this.value.replace(/[^\d]/g, '');">
+                    <div style="font-size: 12px; color: #6c757d; margin-top: 6px;">Must be a 10-digit phone number</div>
                     @error('reporter_phone')
                         <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
                     @enderror
@@ -65,7 +66,31 @@
 
             <div class="form-group">
                 <label class="form-label" for="description">Description</label>
-                <textarea class="form-textarea" id="description" name="description" required>{{ old('description', $report->description) }}</textarea>
+                <style>
+                    .ql-container {
+                        font-size: 14px;
+                        font-family: inherit;
+                    }
+                    .ql-editor {
+                        min-height: 250px;
+                        max-height: 400px;
+                        padding: 12px;
+                        border-radius: 6px;
+                        line-height: 1.6;
+                    }
+                    .ql-toolbar.ql-snow {
+                        border: 1px solid #dee2e6;
+                        border-bottom: none;
+                        border-radius: 6px 6px 0 0;
+                        background: #f8f9fa;
+                    }
+                    .ql-container.ql-snow {
+                        border: 1px solid #dee2e6;
+                        border-radius: 0 0 6px 6px;
+                    }
+                </style>
+                <div id="description" data-quill-editor data-quill-placeholder="Enter report description..."></div>
+                <input type="hidden" name="description" id="description-input" value="{{ old('description', $report->description) }}" required>
                 @error('description')
                     <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
                 @enderror
@@ -105,9 +130,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="block">Block</label>
+                    <label class="form-label" for="block">Location</label>
                     <select class="form-select" id="block" name="block" required>
-                        <option value="">Select block</option>
+                        <option value="">Select location</option>
                         <option value="Nepal Block" @selected(old('block', $report->block ?? '') === 'Nepal Block')>Nepal Block (Inside College)</option>
                         <option value="UK Block" @selected(old('block', $report->block ?? '') === 'UK Block')>UK Block (Inside College)</option>
                         <option value="Pokhara City" @selected(old('block', $report->block ?? '') === 'Pokhara City' || old('block', $report->block ?? '') === 'Pokhara')>Pokhara City (Outside College)</option>
@@ -193,6 +218,8 @@
                     <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
                 @enderror
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
 
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button type="submit" class="btn btn-primary">{{ $submitLabel }}</button>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use App\Models\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,12 @@ class ProfileController extends Controller
             ->take(5)
             ->get();
 
+        $publishedArticles = Article::query()
+            ->published()
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get();
+
         $recentActivity = [
             'total_reports' => $user->reports()->count(),
             'total_claims' => $user->claims()->count(),
@@ -40,7 +47,7 @@ class ProfileController extends Controller
             'rejected_claims' => $user->claims()->where('status', 'rejected')->count(),
         ];
 
-        return view('user.profile', compact('user', 'myReports', 'myClaims', 'myContactMessages', 'recentActivity'));
+        return view('user.profile', compact('user', 'myReports', 'myClaims', 'myContactMessages', 'recentActivity', 'publishedArticles'));
     }
 
     public function updatePassword(Request $request): RedirectResponse

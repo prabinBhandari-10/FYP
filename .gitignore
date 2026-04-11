@@ -40,3 +40,6 @@ pnpm-debug.log*
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Database - keep backups in version control but ignore main file
+/database/database.sqlite
+!/database/database.sqlite.backup

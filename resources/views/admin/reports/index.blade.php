@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <form method="GET" action="{{ route('admin.reports.index') }}" style="display: grid; grid-template-columns: minmax(0, 1fr) 170px 170px auto; gap: 10px; align-items: center;">
+        <form method="GET" action="{{ route('admin.reports.index') }}" style="display: grid; grid-template-columns: minmax(0, 1fr) 170px 170px 140px auto; gap: 10px; align-items: center;">
             <input class="form-input" type="text" name="q" value="{{ $filters['q'] }}" placeholder="Search title, description, reporter...">
             <select class="form-select" name="type">
                 <option value="">All types</option>
@@ -29,6 +29,11 @@
                 <option value="pending" @selected($filters['status'] === 'pending')>Pending Approval</option>
                 <option value="open" @selected($filters['status'] === 'open')>Open</option>
                 <option value="closed" @selected($filters['status'] === 'closed')>Closed</option>
+            </select>
+            <select class="form-select" name="urgency">
+                <option value="">All urgency</option>
+                <option value="normal" @selected($filters['urgency'] === 'normal')>Normal</option>
+                <option value="urgent" @selected($filters['urgency'] === 'urgent')>Urgent Only</option>
             </select>
             <button class="btn btn-outline" type="submit">Filter</button>
         </form>
@@ -53,6 +58,7 @@
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Submitted By</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Location</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Status</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Urgency</th>
                         <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color);">Actions</th>
                     </tr>
                 </thead>
@@ -87,6 +93,13 @@
                             </td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color);">
                                 <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $report->status }}</span>
+                            </td>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color);">
+                                @if ($report->isUrgent())
+                                    <span class="badge" style="background: #fee2e2; color: #c2255c; border: 1px solid #fca5a5; font-weight: 600;">URGENT</span>
+                                @else
+                                    <span class="badge badge-neutral">Normal</span>
+                                @endif
                             </td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid var(--border-color);">
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">

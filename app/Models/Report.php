@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -30,6 +31,9 @@ class Report extends Model
         'image',
         'status',
         'is_anonymous',
+        'urgency',
+        'payment_pidx',
+        'payment_status',
     ];
 
     protected function casts(): array
@@ -69,6 +73,26 @@ class Report extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ReportImage::class)->orderBy('sort_order');
+    }
+
+    public function isUrgent(): bool
+    {
+        return $this->urgency === 'urgent';
+    }
+
+    public function scopeNotDeleted(Builder $query): Builder
+    {
+        return $query->where('status', '!=', 'deleted');
+    }
+
+    public function requiresPayment(): bool
+    {
+        return $this->isUrgent() && $this->payment_status !== 'completed';
+    }
+
+    public function paymentPending(): bool
+    {
+        return $this->payment_status === 'pending';
     }
 
     protected static function booted(): void

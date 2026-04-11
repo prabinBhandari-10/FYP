@@ -22,12 +22,6 @@
     <a href="{{ route('items.index') }}" class="btn btn-ghost" style="padding-left: 0;">Back to Browse</a>
 </section>
 
-@if (session('show_matches'))
-    <section class="alert alert-success" style="margin-bottom: 14px; border-radius: 16px;">
-        Smart matching is active. Review the <strong>Possible Matches</strong> section below for similar {{ $report->type === 'lost' ? 'found' : 'lost' }} items.
-    </section>
-@endif
-
 @if (session('success'))
     <section class="alert alert-success" style="margin-bottom: 14px; border-radius: 16px;">
         {{ session('success') }}
@@ -54,13 +48,16 @@
             <div style="padding: 22px;">
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
                     <span class="badge {{ $report->type === 'lost' ? 'badge-lost' : 'badge-found' }}">{{ $report->type === 'lost' ? 'Lost Item' : 'Found Item' }}</span>
+                    @if ($report->isUrgent())
+                        <span class="badge" style="background: #fee2e2; color: #c2255c; border: 1px solid #fca5a5; font-weight: 600;">⭐ FEATURED (Urgent)</span>
+                    @endif
                     <span class="badge badge-neutral" style="text-transform: capitalize;">{{ $report->status }}</span>
                     <span class="badge badge-neutral">Color: {{ $report->color ?? 'Not specified' }}</span>
                 </div>
                 <h1 style="font-size: 30px; margin-bottom: 8px;">{{ $report->title }}</h1>
                 <p class="section-note" style="margin-bottom: 16px;">Reported on {{ $report->created_at->format('F d, Y') }}</p>
                 <h2 style="font-size: 20px; margin-bottom: 10px;">Description</h2>
-                <p style="font-size: 15px; line-height: 1.7; color: var(--text-muted); white-space: pre-wrap;">{{ $report->description }}</p>
+                <div style="font-size: 15px; line-height: 1.7; color: var(--text-muted);">{!! $report->description !!}</div>
             </div>
         </article>
 
@@ -161,6 +158,13 @@
                 @if ($report->report_uid)
                     <div>
                         <a href="{{ route('reports.track.show', $report->report_uid) }}" class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;">Track Using UID</a>
+                    </div>
+                @endif
+                @if ($report->status === 'pending' && $activeUser && $activeUser->id === $report->user_id)
+                    <div style="padding: 14px; border-radius: 12px; background: #eff6ff; border: 1px solid #bfdbfe;">
+                        <p style="margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #1e40af;">✏️ Edit Your Report</p>
+                        <p style="margin: 0 0 10px; font-size: 12px; color: #1e3a8a; line-height: 1.5;">Your report is awaiting admin verification. You can still make changes until it's approved.</p>
+                        <a href="{{ route('reports.' . $report->type . '.edit', $report) }}" class="btn btn-outline" style="width: 100%;">Edit Report</a>
                     </div>
                 @endif
                 @if ($report->type === 'lost' && $report->status === 'open' && $activeUser && ($activeUser->id === $report->user_id || $activeUser->role === 'admin'))

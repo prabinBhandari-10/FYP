@@ -198,6 +198,14 @@ navigator.clipboard.writeText(reportData.url)
 - [ ] Facebook share dialog opens with correct URL
 - [ ] Twitter share pre-fills text and URL
 - [ ] WhatsApp opens with message pre-filled
+
+## Sample Reports
+
+| UID | Type | Title | Color | Reporter Contact | Submitted By | Location | Status | Urgency | Actions |
+|-----|------|-------|-------|------------------|--------------|----------|--------|---------|---------|
+| RPT-YNOISTJR | FOUND | pendrive Electronics \| Apr 11, 2026 | Silver | razat bhandari prabingpthora@gmail.com 9804118709 | razat bhandari | UK Block - Parking Area | Pending | NORMAL | View / Edit / Approve / Reject / Delete |
+| RPT-DOAYXABM | LOST | phone Electronics \| Apr 11, 2026 | Silver | razat bhandari prabingpthora@gmail.com 9846045388 | razat bhandari | Nepal Block - Kapuche | Open | NORMAL | View / Edit / Delete |
+| RPT-MXKFMSQX | LOST | book Books/Stationery \| Apr 11, 2026 | Blue | razat bhandari prabingpthora@gmail.com 9825224967 | razat bhandari | UK Block - Big Ben | Open | NORMAL | View / Edit / Delete |
 - [ ] Email client opens with subject/body pre-filled
 - [ ] Copy to clipboard works and shows notification
 - [ ] Card share buttons don't interfere with card navigation
