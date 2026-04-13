@@ -638,6 +638,26 @@ class AdminController extends Controller
         $beforeStatus = $report->status;
         $report->update(['status' => 'open']);
 
+        // Create notification record for user
+        if ($report->user_id) {
+            Notification::create([
+                'user_id' => $report->user_id,
+                'type' => 'report_approved',
+                'title' => 'Report Approved',
+                'message' => "Your {$report->type} report '{$report->title}' has been approved and is now visible to all users.",
+                'related_report_id' => $report->id,
+                'is_read' => false,
+                'is_email_sent' => false,
+            ]);
+
+            // Send email notification
+            try {
+                $report->user->notify(new \App\Notifications\ReportApprovedNotification($report));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send report approval email: ' . $e->getMessage());
+            }
+        }
+
         $this->logAdminAction(
             $request,
             'report_approved',
@@ -657,6 +677,26 @@ class AdminController extends Controller
 
         $beforeStatus = $report->status;
         $report->update(['status' => 'closed']);
+
+        // Create notification record for user
+        if ($report->user_id) {
+            Notification::create([
+                'user_id' => $report->user_id,
+                'type' => 'report_rejected',
+                'title' => 'Report Rejected',
+                'message' => "Your {$report->type} report '{$report->title}' has been rejected and is not visible to users.",
+                'related_report_id' => $report->id,
+                'is_read' => false,
+                'is_email_sent' => false,
+            ]);
+
+            // Send email notification
+            try {
+                $report->user->notify(new \App\Notifications\ReportRejectedNotification($report));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send report rejection email: ' . $e->getMessage());
+            }
+        }
 
         $this->logAdminAction(
             $request,
@@ -846,13 +886,53 @@ class AdminController extends Controller
                 ]);
             }
 
+            DB::transaction(function () use ($claim, $request, $validated) {
+                $claim->update([
+                    'status' => 'awaiting_payment',
+                    'held_at' => null,
+                    'payment_required' => true,
+                    'payment_amount' => (int) $validated['payment_amount'],
+                    'payment_reason' => (string) $validated['payment_reason'],
+                    'payment_status' => 'pending',
+                    'payment_pidx' => null,
+                    'payment_completed_at' => null,
+                ]);
+
+                if ($claim->user_id) {
+                    Notification::create([
+                        'user_id' => $claim->user_id,
+                        'type' => 'claim_payment_required',
+                        'title' => 'Payment Required for Claim',
+                        'message' => 'Admin reviewed your claim and requested payment before final verification.',
+                        'related_report_id' => $claim->item_id,
+                        'related_claim_id' => $claim->id,
+                    ]);
+                }
+
+                $this->logAdminAction(
+                    $request,
+                    'claim_payment_required',
+                    $claim,
+                    'Admin marked claim as awaiting payment.',
+                    [
+                        'claim_id' => $claim->id,
+                        'payment_amount' => (int) $validated['payment_amount'],
+                        'payment_reason' => (string) $validated['payment_reason'],
+                    ]
+                );
+            });
+
+            return back()->with('success', 'Claim moved to awaiting payment.');
+        }
+
+        DB::transaction(function () use ($claim, $request) {
             $claim->update([
-                'status' => 'awaiting_payment',
+                'status' => 'under_verification',
                 'held_at' => null,
-                'payment_required' => true,
-                'payment_amount' => (int) $validated['payment_amount'],
-                'payment_reason' => (string) $validated['payment_reason'],
-                'payment_status' => 'pending',
+                'payment_required' => false,
+                'payment_amount' => null,
+                'payment_reason' => null,
+                'payment_status' => null,
                 'payment_pidx' => null,
                 'payment_completed_at' => null,
             ]);
@@ -860,9 +940,9 @@ class AdminController extends Controller
             if ($claim->user_id) {
                 Notification::create([
                     'user_id' => $claim->user_id,
-                    'type' => 'claim_received',
-                    'title' => 'Payment Required for Claim',
-                    'message' => 'Admin reviewed your claim and requested payment before final verification.',
+                    'type' => 'claim_under_verification',
+                    'title' => 'Claim Under Verification',
+                    'message' => 'Admin reviewed your claim and moved it to under verification.',
                     'related_report_id' => $claim->item_id,
                     'related_claim_id' => $claim->id,
                 ]);
@@ -870,48 +950,12 @@ class AdminController extends Controller
 
             $this->logAdminAction(
                 $request,
-                'claim_payment_required',
+                'claim_under_verification',
                 $claim,
-                'Admin marked claim as awaiting payment.',
-                [
-                    'claim_id' => $claim->id,
-                    'payment_amount' => (int) $validated['payment_amount'],
-                    'payment_reason' => (string) $validated['payment_reason'],
-                ]
+                'Claim moved to under verification by admin.',
+                ['claim_id' => $claim->id]
             );
-
-            return back()->with('success', 'Claim moved to awaiting payment.');
-        }
-
-        $claim->update([
-            'status' => 'under_verification',
-            'held_at' => null,
-            'payment_required' => false,
-            'payment_amount' => null,
-            'payment_reason' => null,
-            'payment_status' => null,
-            'payment_pidx' => null,
-            'payment_completed_at' => null,
-        ]);
-
-        if ($claim->user_id) {
-            Notification::create([
-                'user_id' => $claim->user_id,
-                'type' => 'claim_received',
-                'title' => 'Claim Under Verification',
-                'message' => 'Admin reviewed your claim and moved it to under verification.',
-                'related_report_id' => $claim->item_id,
-                'related_claim_id' => $claim->id,
-            ]);
-        }
-
-        $this->logAdminAction(
-            $request,
-            'claim_under_verification',
-            $claim,
-            'Claim moved to under verification by admin.',
-            ['claim_id' => $claim->id]
-        );
+        });
 
         return back()->with('success', 'Claim moved to under verification.');
     }
@@ -1034,29 +1078,31 @@ class AdminController extends Controller
             return back()->with('success', 'Claim status is already decided.');
         }
 
-        $claim->update([
-            'status' => 'rejected',
-            'held_at' => null,
-        ]);
-
-        if ($claim->user_id) {
-            Notification::create([
-                'user_id' => $claim->user_id,
-                'type' => 'claim_rejected',
-                'title' => 'Claim Rejected',
-                'message' => 'Your claim was reviewed by admin and rejected.',
-                'related_report_id' => $claim->item_id,
-                'related_claim_id' => $claim->id,
+        DB::transaction(function () use ($claim, $request) {
+            $claim->update([
+                'status' => 'rejected',
+                'held_at' => null,
             ]);
-        }
 
-        $this->logAdminAction(
-            $request,
-            'claim_rejected',
-            $claim,
-            'Claim rejected by admin.',
-            ['claim_id' => $claim->id]
-        );
+            if ($claim->user_id) {
+                Notification::create([
+                    'user_id' => $claim->user_id,
+                    'type' => 'claim_rejected',
+                    'title' => 'Claim Rejected',
+                    'message' => 'Your claim was reviewed by admin and rejected.',
+                    'related_report_id' => $claim->item_id,
+                    'related_claim_id' => $claim->id,
+                ]);
+            }
+
+            $this->logAdminAction(
+                $request,
+                'claim_rejected',
+                $claim,
+                'Claim rejected by admin.',
+                ['claim_id' => $claim->id]
+            );
+        });
 
         return back()->with('success', 'Claim rejected.');
     }

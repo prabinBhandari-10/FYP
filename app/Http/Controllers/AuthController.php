@@ -32,15 +32,29 @@ class AuthController extends Controller
                 'max:255', 
                 'unique:users,email'
             ],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'phone' => ['required', 'string', 'regex:/^\d{10}$/'],
+            'password' => [
+                'required', 
+                'string', 
+                'min:8', 
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'confirmed'
+            ],
+            'password_confirmation' => ['required', 'same:password'],
         ], [
             'email.regex' => 'Please enter a valid email address',
             'email.unique' => 'Email already registered',
+            'phone.regex' => 'Phone number must be exactly 10 digits',
+            'phone.required' => 'Phone number is required',
+            'password.regex' => 'Password must contain at least 8 characters including uppercase, lowercase, numbers, and special characters (@$!%*?&)',
+            'password_confirmation.required' => 'Please confirm your password',
+            'password_confirmation.same' => 'Passwords do not match',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['phone'],
             'role' => 'user',
             'password' => Hash::make($validated['password']),
         ]);
@@ -57,6 +71,28 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new EmailVerificationCodeMail($user, $verificationCode));
         } catch (\Exception $e) {
             \Log::error('Failed to send verification email: ' . $e->getMessage());
+        }
+
+        // Notify all admins about the new user registration
+        try {
+            $admins = User::where('role', 'admin')->get();
+            
+            foreach ($admins as $admin) {
+                // Create DB notification record
+                \App\Models\Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'new_user_registered',
+                    'title' => 'New User Registration',
+                    'message' => "New user {$user->name} ({$user->email}) has registered on the platform.",
+                    'is_read' => false,
+                    'is_email_sent' => false,
+                ]);
+                
+                // Send email notification
+                $admin->notify(new \App\Notifications\NewUserRegisteredNotification($user));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notifications for new user registration: ' . $e->getMessage());
         }
 
         $request->session()->put('pending_verification_user_id', $user->id);
@@ -100,7 +136,16 @@ class AuthController extends Controller
         $validated = $request->validate([
             'token' => ['required'],
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => [
+                'required', 
+                'string', 
+                'min:8', 
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'confirmed'
+            ],
+            'password_confirmation' => ['required', 'same:password'],
+        ], [
+            'password.regex' => 'Password must contain at least 8 characters including uppercase, lowercase, numbers, and special characters (@$!%*?&)',
         ]);
 
         $status = Password::reset(

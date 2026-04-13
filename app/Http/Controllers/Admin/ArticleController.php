@@ -40,11 +40,35 @@ class ArticleController extends Controller
 
         $validated['created_by'] = auth()->id();
 
-        Article::create($validated);
+        $article = Article::create($validated);
+
+        // Notify all users if article is published
+        if ($article->status === 'published') {
+            try {
+                $users = \App\Models\User::where('role', 'user')->get();
+                
+                foreach ($users as $user) {
+                    // Create DB notification record
+                    \App\Models\Notification::create([
+                        'user_id' => $user->id,
+                        'type' => 'new_article_published',
+                        'title' => 'New Article Published',
+                        'message' => "A new article '{$article->title}' has been published on the platform.",
+                        'is_read' => false,
+                        'is_email_sent' => false,
+                    ]);
+                    
+                    // Send email notification
+                    $user->notify(new \App\Notifications\NewArticlePublishedNotification($article));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to create user notifications for article publication: ' . $e->getMessage());
+            }
+        }
 
         return redirect()
             ->route('admin.articles.index')
-            ->with('success', 'Article created successfully.');
+            ->with('success', 'Article created successfully.' . ($article->status === 'published' ? ' Users have been notified.' : ''));
     }
 
     public function show(Article $article)
@@ -75,11 +99,38 @@ class ArticleController extends Controller
             $validated['image'] = $request->file('image')->store('articles', 'public');
         }
 
+        // Check if article is transitioning from draft to published
+        $isTransitioningToPublished = $article->status === 'draft' && $validated['status'] === 'published';
+
         $article->update($validated);
+
+        // Notify all users if article is transitioning to published
+        if ($isTransitioningToPublished) {
+            try {
+                $users = \App\Models\User::where('role', 'user')->get();
+                
+                foreach ($users as $user) {
+                    // Create DB notification record
+                    \App\Models\Notification::create([
+                        'user_id' => $user->id,
+                        'type' => 'new_article_published',
+                        'title' => 'New Article Published',
+                        'message' => "A new article '{$article->title}' has been published on the platform.",
+                        'is_read' => false,
+                        'is_email_sent' => false,
+                    ]);
+                    
+                    // Send email notification
+                    $user->notify(new \App\Notifications\NewArticlePublishedNotification($article));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to create user notifications for article publication: ' . $e->getMessage());
+            }
+        }
 
         return redirect()
             ->route('admin.articles.show', $article)
-            ->with('success', 'Article updated successfully.');
+            ->with('success', 'Article updated successfully.' . ($isTransitioningToPublished ? ' Users have been notified.' : ''));
     }
 
     public function destroy(Article $article)

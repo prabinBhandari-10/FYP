@@ -15,7 +15,7 @@
     <h1 style="font-size: 32px; margin-bottom: 8px;">Browse Reported Items</h1>
     <p class="section-note" style="margin-bottom: 16px;">Use search and filters to quickly find lost and found records.</p>
 
-    <form method="GET" action="{{ route('items.index') }}" class="browse-filters" style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(160px, 220px) minmax(140px, 180px) auto; gap: 10px; align-items: center;">
+    <form method="GET" action="{{ route('items.index') }}" class="browse-filters" style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(160px, 200px) minmax(140px, 160px) minmax(140px, 160px) auto; gap: 10px; align-items: center;">
         <input class="form-input" type="text" name="q" value="{{ request('q') }}" placeholder="Search title, location, or category">
 
         <select class="form-select" name="category">
@@ -29,6 +29,12 @@
             <option value="">Lost and Found</option>
             <option value="lost" @selected(request('type') === 'lost')>Lost</option>
             <option value="found" @selected(request('type') === 'found')>Found</option>
+        </select>
+
+        <select class="form-select" name="urgency">
+            <option value="">All Priority Levels</option>
+            <option value="normal" @selected(request('urgency') === 'normal')>Normal Priority</option>
+            <option value="urgent" @selected(request('urgency') === 'urgent')>Urgent Priority</option>
         </select>
 
         <button type="submit" class="btn btn-primary">Search</button>

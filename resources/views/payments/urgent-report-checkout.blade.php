@@ -20,7 +20,7 @@
 
             <div style="border-top: 1px solid var(--line); padding-top: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-size: 14px;">Urgent Report Fee</span>
+                    <span style="font-size: 14px;">Urgent Report Fee (Minimum)</span>
                     <span style="font-weight: 600; font-size: 16px;">NPR {{ number_format($amount) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -33,19 +33,16 @@
         <div style="background: #f3f4f6; padding: 16px; border-radius: 12px; margin-bottom: 24px;">
             <h3 style="font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">Benefits of Urgent Reports:</h3>
             <ul style="padding-left: 18px; margin: 0; font-size: 13px; color: var(--text-muted); display: grid; gap: 6px;">
-                <li>Featured at the top of search results</li>
-                <li>Increased visibility to potential claimants</li>
+                <li>🔴 Featured at the top of search results</li>
+                <li>📈 Increased visibility to potential claimants</li>
+                <li>⏱️ Urgent tag displayed on your report</li>
                 <li>Valid for 7 days from payment</li>
-                <li>Secure payment via Khalti</li>
+                <li>🔒 Secure payment via Khalti</li>
             </ul>
         </div>
 
-        <div id="khalti-payment-section" style="display: none;">
-            <div id="khalti-payment-container" style="margin-bottom: 24px;"></div>
-        </div>
-
-        <button type="button" id="pay-button" class="btn btn-primary" style="width: 100%; padding: 12px;">
-            Pay NPR {{ number_format($amount) }} via Khalti
+        <button type="button" id="pay-button" class="btn btn-primary" style="width: 100%; padding: 12px; cursor: pointer;">
+            Loading Payment System...
         </button>
 
         <a href="{{ route('items.show', $report) }}" style="display: block; text-align: center; margin-top: 12px; color: var(--text-muted); text-decoration: none; font-size: 14px;">
@@ -54,54 +51,71 @@
     </article>
 </section>
 
-<script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2.0.0/khalti-checkout.iffe.js"></script>
+<script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2.0.0/khalti-checkout.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const reportId = '{{ $report->id }}';
-        const amount = {{ $amount * 100 }}; // Convert to paisa
-        const publicKey = '{{ $publicKey }}';
-
+    (function() {
         const config = {
-            publicKey: publicKey,
-            productIdentity: 'report-' + reportId,
-            productName: 'Urgent Report - {{ substr($report->title, 0, 50) }}',
-            productUrl: '{{ route('items.show', $report) }}',
+            publicKey: '{{ $publicKey }}',
+            productIdentity: 'report-{{ $report->id }}',
+            productName: 'Urgent Report - {{ substr($report->title, 0, 40) }}',
+            productUrl: window.location.href,
             eventHandler: {
                 onSuccess(payload) {
-                    // Send verification request to backend
-                    verifyPayment(payload.tidx);
+                    console.log('Payment Success:', payload);
+                    if (payload.pidx) {
+                        const verifyUrl = '{{ route("payments.urgent-report.verify", $report) }}?pidx=' + payload.pidx;
+                        window.location.href = verifyUrl;
+                    }
                 },
                 onError(error) {
-                    console.error('Payment error:', error);
-                    alert('Payment failed. Please try again.');
+                    console.error('Payment Error:', error);
+                    alert('Payment failed: ' + (error?.message || 'Unknown error occurred'));
                 },
                 onClose() {
-                    console.log('Khalti payment closed');
+                    console.log('Modal closed');
                 }
             },
-            amount: amount,
+            amount: {{ $amount * 100 }}
         };
 
-        const checkout = new KhaltiCheckout(config);
+        let checkout = null;
+        let sdkLoaded = false;
 
-        document.getElementById('pay-button').addEventListener('click', function() {
-            checkout.show({amount: amount});
-        });
-
-        function verifyPayment(pidx) {
-            fetch('{{ route('payments.urgent-report.verify', $report) }}?pidx=' + pidx)
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = response.url;
-                    } else {
-                        alert('Payment verification failed. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Verification error:', error);
-                    alert('An error occurred during verification.');
-                });
+        function initCheckout() {
+            if (!sdkLoaded && typeof window.KhaltiCheckout !== 'undefined') {
+                sdkLoaded = true;
+                checkout = new window.KhaltiCheckout(config);
+                attachButton();
+            } else if (!sdkLoaded) {
+                setTimeout(initCheckout, 100);
+            }
         }
-    });
+
+        function attachButton() {
+            const btn = document.getElementById('pay-button');
+            if (!btn) return;
+
+            btn.innerHTML = 'Pay NPR {{ number_format($amount) }} via Khalti';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.onclick = function(e) {
+                e.preventDefault();
+                if (checkout) {
+                    checkout.show({amount: {{ $amount * 100 }}});
+                }
+            };
+        }
+
+        // Start loading as soon as script runs
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCheckout);
+        } else {
+            initCheckout();
+        }
+
+        // Also try when window loads
+        window.addEventListener('load', initCheckout);
+    })();
 </script>
+
 @endsection

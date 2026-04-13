@@ -8,10 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Clean up any remaining claims_old table that might have been left behind
-        if ($this->tableExists('claims_old')) {
-            Schema::disableForeignKeyConstraints();
-            DB::statement('DROP TABLE IF EXISTS claims_old');
+        if (DB::getDriverName() !== 'sqlite') {
+            return;
+        }
+
+        // Idempotent cleanup - only remove if exists
+        Schema::disableForeignKeyConstraints();
+        try {
+            if ($this->tableExists('claims_old')) {
+                DB::statement('DROP TABLE IF EXISTS claims_old');
+            }
+        } finally {
             Schema::enableForeignKeyConstraints();
         }
     }
@@ -21,8 +28,11 @@ return new class extends Migration
         // Nothing to rollback
     }
 
-    private function tableExists($table): bool
+    private function tableExists(string $table): bool
     {
-        return Schema::hasTable($table);
+        return DB::table('sqlite_master')
+            ->where('type', 'table')
+            ->where('name', $table)
+            ->exists();
     }
 };

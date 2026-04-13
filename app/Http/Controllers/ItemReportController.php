@@ -76,6 +76,13 @@ class ItemReportController extends Controller
             $query->where('type', (string) $request->string('type'));
         }
 
+        if ($request->filled('urgency')) {
+            $urgency = (string) $request->string('urgency');
+            if (in_array($urgency, ['normal', 'urgent'], true)) {
+                $query->where('urgency', $urgency);
+            }
+        }
+
         $reports = $query
             ->orderByDesc('date')
             ->paginate(9)
@@ -244,6 +251,7 @@ class ItemReportController extends Controller
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'date' => ['required', 'date'],
+            'urgency' => ['required', 'in:normal,urgent'],
             'image' => ['nullable', 'image', 'max:4096'],
             'images' => ['nullable', 'array', 'max:5'],
             'images.*' => ['nullable', 'image', 'max:4096'],
@@ -300,8 +308,8 @@ class ItemReportController extends Controller
             'image' => $imagePath,
             'status' => $request->user()->role === 'admin' ? 'open' : 'pending',
             'is_anonymous' => $validated['is_anonymous'] ?? false,
-            'urgency' => 'normal',
-            'payment_status' => 'completed',
+            'urgency' => $validated['urgency'],
+            'payment_status' => $validated['urgency'] === 'urgent' ? 'pending' : 'completed',
         ]);
 
         // Handle multiple images if provided
@@ -328,6 +336,13 @@ class ItemReportController extends Controller
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Report submission email failed: ' . $e->getMessage());
+        }
+
+        // Redirect to payment page if urgent report
+        if ($validated['urgency'] === 'urgent') {
+            return redirect()
+                ->route('payments.urgent-report', $report)
+                ->with('info', 'Your report has been created successfully. Please complete the payment of NPR 50 to feature it at the top.');
         }
 
         return redirect()

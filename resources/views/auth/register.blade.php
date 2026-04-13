@@ -36,6 +36,17 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label" for="phone">Phone Number (10 digits)</label>
+                <input class="form-input" type="tel" id="phone" name="phone" 
+                       placeholder="98XXXXXXXX" pattern="\d{10}" maxlength="10" 
+                       inputmode="numeric" value="{{ $errors->any() ? old('phone') : '' }}" required
+                       oninput="this.value = this.value.replace(/[^\d]/g, '');">
+                @error('phone')
+                    <span style="color: var(--danger); font-size: 13px;">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
                 <label class="form-label" for="password">Password</label>
                 <input class="form-input" type="password" id="password" name="password" placeholder="Create a password" required autocomplete="new-password">
             </div>
@@ -64,14 +75,12 @@
         const passwordField = document.getElementById('password');
         const confirmField = document.getElementById('password_confirmation');
         
-        // Clear form immediately
         form.reset();
         nameField.value = '';
         emailField.value = '';
         passwordField.value = '';
         confirmField.value = '';
         
-        // Clear again after small delay to prevent browser autofill
         setTimeout(function() {
             nameField.value = '';
             emailField.value = '';

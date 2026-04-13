@@ -151,7 +151,12 @@ class PaymentController extends Controller
      */
     public function showUrgentReportPayment(\App\Models\Report $report): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        // Get authenticated user from either web or admin guard
+        $user = \Illuminate\Support\Facades\Auth::guard('admin')->user() ?? \Illuminate\Support\Facades\Auth::guard('web')->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in first.');
+        }
 
         // Check if report belongs to user or if user is admin
         if ($report->user_id !== $user->id && $user->role !== 'admin') {
@@ -174,7 +179,7 @@ class PaymentController extends Controller
 
         return view('payments.urgent-report-checkout', [
             'report' => $report,
-            'amount' => 100, // NPR 100
+            'amount' => 50, // NPR 50 minimum
             'publicKey' => config('services.khalti.public_key'),
         ]);
     }
@@ -184,7 +189,12 @@ class PaymentController extends Controller
      */
     public function initiateUrgentReportPayment(Request $request, \App\Models\Report $report): \Illuminate\Http\JsonResponse
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        // Get authenticated user from either web or admin guard
+        $user = \Illuminate\Support\Facades\Auth::guard('admin')->user() ?? \Illuminate\Support\Facades\Auth::guard('web')->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Not authenticated'], 401);
+        }
 
         // Validate authorization
         if ($report->user_id !== $user->id && $user->role !== 'admin') {
@@ -199,7 +209,7 @@ class PaymentController extends Controller
             $response = $this->khaltiService->initiatePayment([
                 'return_url' => route('payments.urgent-report.verify', $report),
                 'website_url' => config('app.url'),
-                'amount' => 10000, // Amount in paisa (100 NPR = 10000 paisa)
+                'amount' => 5000, // Amount in paisa (50 NPR = 5000 paisa)
                 'purchase_order_id' => 'report-' . $report->id,
                 'purchase_order_name' => 'Urgent Report - ' . substr($report->title, 0, 50),
                 'customer_info' => [
@@ -224,7 +234,12 @@ class PaymentController extends Controller
      */
     public function verifyUrgentReportPayment(Request $request, \App\Models\Report $report): RedirectResponse
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        // Get authenticated user from either web or admin guard
+        $user = \Illuminate\Support\Facades\Auth::guard('admin')->user() ?? \Illuminate\Support\Facades\Auth::guard('web')->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to verify payment.');
+        }
 
         // Validate authorization
         if ($report->user_id !== $user->id && $user->role !== 'admin') {
@@ -250,9 +265,21 @@ class PaymentController extends Controller
                     'payment_status' => 'completed',
                 ]);
 
+                // AUTO-APPROVE urgent reports after successful payment
+                if ($report->urgency === 'urgent' && $report->status !== 'open') {
+                    $report->update([
+                        'status' => 'open', // Automatically approve (set to open status)
+                    ]);
+                    
+                    Log::info('Urgent report auto-approved after payment', [
+                        'report_id' => $report->id,
+                        'pidx' => $pidx,
+                    ]);
+                }
+
                 return redirect()
                     ->route('items.show', $report)
-                    ->with('success', 'Payment successful! Your report is now featured and visible to all users.');
+                    ->with('success', 'Payment successful! Your urgent report is now featured and visible to all users.');
             } else {
                 $report->update([
                     'payment_pidx' => $pidx,

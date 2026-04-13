@@ -15,53 +15,55 @@ return new class extends Migration
 
         Schema::disableForeignKeyConstraints();
 
-        if (! $this->tableExists('claims_old')) {
-            if ($this->tableExists('claims')) {
-                DB::statement('ALTER TABLE claims RENAME TO claims_old');
+        try {
+            if (! $this->tableExists('claims_old')) {
+                if ($this->tableExists('claims')) {
+                    DB::statement('ALTER TABLE claims RENAME TO claims_old');
+                }
+
+                $this->createClaimsTable();
+                $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
+            } elseif (! $this->tableExists('claims')) {
+                $this->createClaimsTable();
+                $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
+            } else {
+                $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
             }
 
-            $this->createClaimsTable();
-            $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
-        } elseif (! $this->tableExists('claims')) {
-            $this->createClaimsTable();
-            $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
-        } else {
-            $this->createUniqueIndex('claims', 'claims_user_id_item_id_unique_v2');
+            if ($this->tableExists('claims_old')) {
+                $rows = DB::table('claims_old')
+                    ->orderBy('id')
+                    ->get()
+                    ->map(function ($row) {
+                        return [
+                            'id' => $row->id,
+                            'user_id' => $row->user_id,
+                            'item_id' => $row->item_id,
+                            'message' => $row->message,
+                            'citizenship_document_path' => $row->citizenship_document_path ?? null,
+                            'proof_text' => $row->proof_text ?? null,
+                            'proof_photo_path' => $row->proof_photo_path ?? null,
+                            'status' => $row->status,
+                            'held_at' => $row->held_at,
+                            'payment_required' => $row->payment_required ?? 0,
+                            'payment_amount' => $row->payment_amount ?? null,
+                            'payment_reason' => $row->payment_reason ?? null,
+                            'payment_status' => $row->payment_status ?? null,
+                            'payment_pidx' => $row->payment_pidx ?? null,
+                            'payment_completed_at' => $row->payment_completed_at ?? null,
+                            'created_at' => $row->created_at,
+                            'updated_at' => $row->updated_at,
+                        ];
+                    })
+                    ->all();
+
+                DB::table('claims')->insertOrIgnore($rows);
+
+                DB::statement('DROP TABLE claims_old');
+            }
+        } finally {
+            Schema::enableForeignKeyConstraints();
         }
-
-        if ($this->tableExists('claims_old')) {
-            $rows = DB::table('claims_old')
-                ->orderBy('id')
-                ->get()
-                ->map(function ($row) {
-                    return [
-                        'id' => $row->id,
-                        'user_id' => $row->user_id,
-                        'item_id' => $row->item_id,
-                        'message' => $row->message,
-                        'citizenship_document_path' => $row->citizenship_document_path ?? null,
-                        'proof_text' => $row->proof_text ?? null,
-                        'proof_photo_path' => $row->proof_photo_path ?? null,
-                        'status' => $row->status,
-                        'held_at' => $row->held_at,
-                        'payment_required' => $row->payment_required ?? 0,
-                        'payment_amount' => $row->payment_amount ?? null,
-                        'payment_reason' => $row->payment_reason ?? null,
-                        'payment_status' => $row->payment_status ?? null,
-                        'payment_pidx' => $row->payment_pidx ?? null,
-                        'payment_completed_at' => $row->payment_completed_at ?? null,
-                        'created_at' => $row->created_at,
-                        'updated_at' => $row->updated_at,
-                    ];
-                })
-                ->all();
-
-            DB::table('claims')->insertOrIgnore($rows);
-
-            DB::statement('DROP TABLE claims_old');
-        }
-
-        Schema::enableForeignKeyConstraints();
     }
 
     public function down(): void

@@ -130,6 +130,15 @@
             color: var(--text-gray);
             font-size: 13px;
         }
+
+        .lf-table tbody tr.rejected-claim {
+            background-color: #fee2e2;
+            border-left: 4px solid #dc2626;
+        }
+
+        .lf-table tbody tr.rejected-claim td {
+            color: #7f1d1d;
+        }
     </style>
 
     <section class="lf-page">
@@ -170,7 +179,7 @@
                         </thead>
                         <tbody>
                             @foreach ($claims as $claim)
-                                <tr>
+                                <tr @if($claim->status === 'rejected') class="rejected-claim" @endif>
                                     <td>{{ $claim->report?->title ?? 'Item' }}</td>
                                     <td>{{ $claim->report?->user?->name ?? 'Unknown' }}</td>
                                     <td>

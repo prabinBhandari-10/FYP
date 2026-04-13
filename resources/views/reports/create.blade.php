@@ -156,6 +156,26 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label" for="urgency">Priority Level</label>
+                    <select class="form-select" id="urgency" name="urgency" required onchange="updateUrgencyInfo()">
+                        <option value="normal" @selected(old('urgency', 'normal') === 'normal')>Normal Priority</option>
+                        <option value="urgent" @selected(old('urgency') === 'urgent')>🔴 Urgent Priority - NPR 50</option>
+                    </select>
+                    <p class="section-note" style="margin-top: 6px;">Urgent reports require a payment of NPR 50 minimum and will be featured at the top for 7 days.</p>
+                    @error('urgency')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
+            <div id="urgent-info-box" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 12px; padding: 14px; margin: 18px 0; color: #c2255c;">
+                <div style="font-weight: 600; margin-bottom: 8px;">⚠️ Urgent Report - Payment Required</div>
+                <div style="font-size: 13px; line-height: 1.6;">
+                    <p style="margin: 0 0 8px 0;">Your urgent report will require a payment of <strong>NPR 50</strong> to be featured. After submitting this form, you'll be redirected to complete the Khalti payment.</p>
+                    <p style="margin: 0;">Benefits: Top ranking for 7 days, increased visibility, urgent badge on your report.</p>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
                     <label class="form-label" for="image">Primary Image (optional)</label>
                     <input class="form-input" type="file" id="image" name="image" accept="image/*">
                     @error('image')<div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ $message }}</div>@enderror
@@ -368,5 +388,20 @@
             }
         });
     })();
+
+    // Show/hide urgent info box based on urgency selection
+    function updateUrgencyInfo() {
+        const urgencySelect = document.getElementById('urgency');
+        const urgentInfoBox = document.getElementById('urgent-info-box');
+        
+        if (urgencySelect.value === 'urgent') {
+            urgentInfoBox.style.display = 'block';
+        } else {
+            urgentInfoBox.style.display = 'none';
+        }
+    }
+
+    // Initialize on page load
+    updateUrgencyInfo();
 </script>
 @endsection

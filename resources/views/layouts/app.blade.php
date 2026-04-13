@@ -33,6 +33,115 @@
             --shadow-hover: 0 16px 34px rgba(16, 33, 63, 0.12);
         }
 
+        /* Dark Mode Theme */
+        body.dark-mode {
+            --bg-page: #0f1419;
+            --bg-elevated: #1a1f2e;
+            --bg-soft: #252d3d;
+            --text-main: #e0e6f2;
+            --text-muted: #a0aac4;
+            --text-soft: #7784a0;
+            --line: #3d4556;
+            --primary: #57b7e8;
+            --primary-strong: #6ec7ef;
+            --primary-tint: #1a3a4a;
+            --accent: #24b8df;
+            --danger: #e85d7d;
+            --success: #4fd992;
+            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 16px 34px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .site-header {
+            background: rgba(26, 31, 46, 0.96);
+            border-bottom-color: rgba(61, 69, 86, 0.9);
+        }
+
+        body.dark-mode .brand-logo {
+            filter: brightness(1.2) invert(0.05);
+        }
+
+        body.dark-mode input.form-input,
+        body.dark-mode textarea.form-input,
+        body.dark-mode select.form-input {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border-color: var(--line);
+        }
+
+        body.dark-mode input.form-input::placeholder,
+        body.dark-mode textarea.form-input::placeholder {
+            color: var(--text-soft);
+        }
+
+        body.dark-mode input.form-input:focus,
+        body.dark-mode textarea.form-input:focus,
+        body.dark-mode select.form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(87, 183, 232, 0.24);
+            background: var(--bg-elevated);
+        }
+
+        body.dark-mode .card {
+            background: var(--bg-elevated);
+            border-color: var(--line);
+        }
+
+        body.dark-mode .btn-primary {
+            background: linear-gradient(135deg, #57b7e8, #2f97cf);
+            box-shadow: 0 10px 20px rgba(87, 183, 232, 0.18);
+        }
+
+        body.dark-mode .btn-primary:hover {
+            box-shadow: 0 14px 24px rgba(87, 183, 232, 0.24);
+        }
+
+        body.dark-mode .btn-outline {
+            color: var(--primary);
+            border-color: #3d4556;
+            background: rgba(87, 183, 232, 0.08);
+        }
+
+        body.dark-mode .btn-outline:hover {
+            border-color: #5c6d85;
+            background: rgba(87, 183, 232, 0.14);
+        }
+
+        body.dark-mode .alert-success {
+            background: rgba(79, 217, 146, 0.1);
+            color: #4fd992;
+            border-color: rgba(79, 217, 146, 0.3);
+        }
+
+        body.dark-mode .alert-error {
+            background: rgba(232, 93, 125, 0.1);
+            color: #e85d7d;
+            border-color: rgba(232, 93, 125, 0.3);
+        }
+
+        body.dark-mode .auth-card {
+            background: rgba(26, 31, 46, 0.8);
+            border-color: rgba(61, 69, 86, 0.9);
+        }
+
+        body.dark-mode .badge-lost {
+            color: #ff9aaf;
+            background: rgba(232, 93, 125, 0.12);
+            border: 1px solid rgba(232, 93, 125, 0.3);
+        }
+
+        body.dark-mode .badge-found {
+            color: #72e0f0;
+            background: rgba(36, 184, 223, 0.12);
+            border: 1px solid rgba(36, 184, 223, 0.3);
+        }
+
+        body.dark-mode .badge-neutral {
+            color: #a0aac4;
+            background: rgba(160, 170, 196, 0.08);
+            border: 1px solid rgba(160, 170, 196, 0.2);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -851,11 +960,19 @@
             </div>
 
             <div class="nav-actions">
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="btn btn-ghost" style="padding: 8px 12px; border-radius: 999px; font-size: 18px;" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+
                 @if ($isAuthenticated)
                     <a href="{{ route('chat.index') }}" class="btn btn-ghost" title="Chats">Chats</a>
                     @if (! $isAdmin)
-                        <a href="{{ route('notifications.index') }}" class="btn btn-ghost" style="position: relative;" title="Notifications">
-                            <wa-icon name="bell" variant="thin"></wa-icon>
+                        <a href="{{ route('notifications.index') }}" class="btn btn-ghost" style="position: relative; display: inline-flex; align-items: center; justify-content: center;" title="Notifications">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" style="display: inline-block;">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
                             @php
                                 $unreadCount = 0;
                                 try {
@@ -866,7 +983,7 @@
                             @endphp
                             @if ($unreadCount > 0)
                                 <span style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 999px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
-                                    N
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
                                 </span>
                             @endif
                         </a>
@@ -990,6 +1107,70 @@
                 }
             });
         });
+    </script>
+
+    <!-- Theme Toggle Functionality -->
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+
+        // Load saved theme preference
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+            } else {
+                body.classList.remove('dark-mode');
+                themeIcon.textContent = '🌙';
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '🌙';
+            } else {
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '☀️';
+            }
+        }
+
+        // Check for system preference on first visit
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (!savedTheme) {
+                // No saved preference - check system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '☀️';
+                } else {
+                    body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '🌙';
+                }
+            } else {
+                loadTheme();
+            }
+        }
+
+        // Event listeners
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initializeTheme);
+        
+        // Also run immediately in case DOM is already loaded
+        initializeTheme();
     </script>
 </body>
 </html>

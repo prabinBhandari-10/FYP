@@ -214,12 +214,25 @@
                 @if ($isEdit && $report->image)
                     <div style="margin-top: 8px; font-size: 13px; color: var(--text-gray);">Current image: {{ $report->image }}</div>
                 @endif
-                @error('image')
-                    <div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>
-                @enderror
+                @error('image')<div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>@enderror
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="date">Date</label>
+                    <input class="form-input" id="date" name="date" type="date" required value="{{ old('date', $report->date?->format('Y-m-d')) }}">
+                    @error('date')<div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="urgency">Priority Level</label>
+                    <select class="form-select" id="urgency" name="urgency" required>
+                        <option value="normal" @selected(old('urgency', $report->urgency ?? 'normal') === 'normal')>Normal Priority</option>
+                        <option value="urgent" @selected(old('urgency', $report->urgency ?? 'normal') === 'urgent')>🔴 Urgent Priority</option>
+                    </select>
+                    @error('urgency')<div style="font-size: 12px; color: #b91c1c; margin-top: 6px;">{{ $message }}</div>@enderror
+                </div>
+            </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button type="submit" class="btn btn-primary">{{ $submitLabel }}</button>

@@ -129,9 +129,6 @@
                     @if ($isAuthenticated)
                         <a href="{{ route('reports.lost.create') }}" class="btn btn-primary" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Lost</a>
                         <a href="{{ route('reports.found.create') }}" class="btn btn-outline" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Found</a>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-primary" style="justify-content: center;"> Sign In</a>
-                        <a href="{{ route('register') }}" class="btn btn-outline" style="justify-content: center;"> Create Account</a>
                     @endif
                 @endif
             </div>

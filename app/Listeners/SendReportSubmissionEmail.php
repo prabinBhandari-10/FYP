@@ -6,6 +6,7 @@ use App\Events\ReportSubmitted;
 use App\Models\Notification;
 use App\Models\User;
 use App\Notifications\ReportSubmittedNotification;
+use App\Notifications\NewReportSubmittedNotification;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -37,6 +38,17 @@ class SendReportSubmissionEmail
                     'related_report_id' => $event->report->id,
                     'is_read' => false,
                 ]);
+
+                // Send email notification to admin
+                try {
+                    $admin->notify(new NewReportSubmittedNotification($event->report));
+                } catch (Throwable $e) {
+                    Log::error('Failed to send report submission email to admin.', [
+                        'admin_id' => $admin->id,
+                        'report_id' => $event->report->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         } catch (Throwable $e) {
             Log::error('Failed to create admin notifications for report submission.', [

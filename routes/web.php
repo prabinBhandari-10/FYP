@@ -128,12 +128,14 @@ Route::middleware(['auth:web', 'user'])->group(function () {
     Route::post('/claims/{claim}/payment/initiate', [PaymentController::class, 'initiate'])->name('payment.initiate');
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
-    // Urgent Report Payment Routes
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Urgent Report Payment Routes - Both users and admins can access
+Route::middleware(['auth:web,admin'])->group(function () {
     Route::get('/reports/{report}/payment', [PaymentController::class, 'showUrgentReportPayment'])->name('payments.urgent-report');
     Route::post('/reports/{report}/payment/initiate', [PaymentController::class, 'initiateUrgentReportPayment'])->name('payments.urgent-report.initiate');
     Route::get('/reports/{report}/payment/verify', [PaymentController::class, 'verifyUrgentReportPayment'])->name('payments.urgent-report.verify');
-
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 Route::middleware(['auth:web,admin'])->group(function () {

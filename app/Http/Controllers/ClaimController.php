@@ -80,8 +80,8 @@ class ClaimController extends Controller
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:1000'],
             'citizenship_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
-            'proof_text' => ['required_without:proof_photo', 'nullable', 'string', 'max:2000'],
-            'proof_photo' => ['required_without:proof_text', 'nullable', 'file', 'mimes:jpg,jpeg,png', 'max:4096'],
+            'proof_text' => ['required_without:proof_photo', 'string', 'max:2000'],
+            'proof_photo' => ['required_without:proof_text', 'file', 'mimes:jpg,jpeg,png', 'max:4096'],
         ]);
 
         $citizenshipPath = $request->file('citizenship_document')->store('claims/citizenship', 'public');
@@ -136,27 +136,5 @@ class ClaimController extends Controller
         return redirect()
             ->route('claims.index')
             ->with('success', 'Claim submitted successfully.');
-    }
-
-    public function approve(Claim $claim)
-    {
-        if ($claim->status !== 'pending') {
-            return back()->with('success', 'Claim status is already decided.');
-        }
-
-        $claim->update(['status' => 'approved']);
-
-        return back()->with('success', 'Claim approved.');
-    }
-
-    public function reject(Claim $claim)
-    {
-        if ($claim->status !== 'pending') {
-            return back()->with('success', 'Claim status is already decided.');
-        }
-
-        $claim->update(['status' => 'rejected']);
-
-        return back()->with('success', 'Claim rejected.');
     }
 }
