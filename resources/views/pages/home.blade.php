@@ -123,12 +123,8 @@
                 @if ($isAdmin)
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-primary" style="justify-content: center;">📊 Dashboard</a>
                     <a href="{{ route('admin.reports.index') }}" class="btn btn-outline" style="justify-content: center;">📋 All Reports</a>
-                    <a href="{{ route('reports.lost.create') }}" class="btn btn-primary" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Lost</a>
-                    <a href="{{ route('reports.found.create') }}" class="btn btn-outline" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Found</a>
                 @else
                     @if ($isAuthenticated)
-                        <a href="{{ route('reports.lost.create') }}" class="btn btn-primary" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Lost</a>
-                        <a href="{{ route('reports.found.create') }}" class="btn btn-outline" style="justify-content: center;"><wa-icon name="calendar-lines-pen" variant="thin"></wa-icon>&nbsp;Report Found</a>
                     @endif
                 @endif
             </div>
